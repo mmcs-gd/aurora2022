@@ -1,13 +1,22 @@
-export default class Player extends Phaser.Physics.Arcade.Sprite{
-    constructor(scene, x, y, name, frame) {
+export default class Player extends Phaser.Physics.Arcade.Sprite {
+    constructor(
+        scene: Phaser.Scene,
+        x: number,
+        y: number,
+        name: string,
+        frame: string | number,
+        readonly maxSpeed: number,
+        readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
+        readonly animationSets: Map<string, string[]>
+    ) {
         super(scene, x, y, name, frame);
         scene.physics.world.enable(this);
         scene.add.existing(this);
     }
 
     update() {
-        const body = this.body;
-        this.body.setVelocity(0);
+        const body = this.body as Phaser.Physics.Arcade.Body;
+        body.setVelocity(0);
         const speed = this.maxSpeed;
         const cursors = this.cursors;
 
@@ -28,7 +37,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite{
         this.updateAnimation();
     };
     updateAnimation() {
-        const animations = this.animationSets.get('Walk');
+        const animations = this.animationSets.get('Walk')!;
         const animsController = this.anims;
         const x = this.body.velocity.x;
         const y = this.body.velocity.y;

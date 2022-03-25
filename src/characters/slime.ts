@@ -1,24 +1,36 @@
-import Vector2 from 'phaser/src/math/Vector2'
+import Phaser from "phaser";
+import Vector2 = Phaser.Math.Vector2
+import { Scene } from "./scene";
+
 const eps = 20;
-export default class Slime extends Phaser.Physics.Arcade.Sprite{
-    constructor(scene, x, y, name, frame) {
+
+export default class Slime extends Phaser.Physics.Arcade.Sprite {
+    constructor(
+        public scene: Scene,
+        x: number,
+        y: number,
+        name: string,
+        frame: number,
+        readonly speed: number,
+        readonly animations: string[],
+    ) {
         super(scene, x, y, name, frame);
         scene.physics.world.enable(this);
         scene.add.existing(this);
     }
+    pointOfInterest?: Vector2
+    nextLocation?: Vector2
+    wantToJump = false
+    path: { x: number, y: number }[] = []
     update() {
-        if (this.hasArrived())
-        {
-            this.pointOfInterest = new Vector2( Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
+        if (this.hasArrived()) {
+            this.pointOfInterest = new Vector2(Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
                 Phaser.Math.RND.between(50, this.scene.physics.world.bounds.height - 50));
-            const neededTileX = Math.floor(this.pointOfInterest.x / 32) ;
-            const neededTileY = Math.floor(this.pointOfInterest.y / 32) ;
-            const currentPositionX =  Math.floor(this.body.x / 32);
-            const currentPositionY =  Math.floor(this.body.y / 32);
+            const { x: neededTileX, y: neededTileY } = this.scene.pixelsToTiles(this.pointOfInterest);
+            const { x: currentPositionX, y: currentPositionY } = this.scene.pixelsToTiles(this.body);
             const me = this;
-            if (!this.wantToJump)
-            {
-                this.scene.finder.findPath(currentPositionX, currentPositionY, neededTileX, neededTileY, function( path ) {
+            if (!this.wantToJump) {
+                this.scene.finder.findPath(currentPositionX, currentPositionY, neededTileX, neededTileY, function (path) {
                     if (path === null) {
                         console.warn("Slime says: Path was not found, gonna jump!");
                         me.path = [];
@@ -31,11 +43,9 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite{
                 });
                 this.scene.finder.calculate();
             }
-
         }
-        if (this.nextLocation)
-        {
-            const body = this.body;
+        if (this.nextLocation) {
+            const body = this.body as Phaser.Physics.Arcade.Body;
             const position = body.position;
 
             if (position.distance(this.nextLocation) < eps) {
@@ -54,31 +64,27 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite{
                 this.body.velocity.normalize().scale(Math.min(Math.abs(delta), this.speed));
             }
         }
-
         this.updateAnimation();
     }
+
     updateAnimation() {
         const animsController = this.anims;
-        if (this.wantToJump)
-        {
+        if (this.wantToJump) {
             animsController.play(this.animations[1], true);
-        } else
-        {
+        } else {
             animsController.play(this.animations[0], true);
         }
-
     }
-    hasArrived()
-    {
+
+    hasArrived() {
         return this.pointOfInterest === undefined || this.pointOfInterest.distance(this.body.position) < eps;
     }
+
     selectNextLocation() {
         const nextTile = this.path.shift();
-        if (nextTile)
-        {
-            this.nextLocation = new Vector2(nextTile.x * 32, nextTile.y * 32);
-        } else
-        {
+        if (nextTile) {
+            this.nextLocation = new Vector2(nextTile).scale(this.scene.tileSize);
+        } else {
             this.nextLocation = this.body.position;
         }
     }

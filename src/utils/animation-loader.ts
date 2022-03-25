@@ -7,24 +7,23 @@ export default class AnimationLoader {
     // config format as in /assets/animations/cyberpunk.json
     // prefix - optional animation name prefix
 
-    constructor(scene, spritesheet, config, prefix = "", frameRate = defaultFrameRate, repeate = defaultRepeat)
-    {
-        this.scene = scene;
-        this.spritesheet = spritesheet;
-        this.config = config;
-        this.prefix = prefix;
-        this.frameRate = frameRate;
-        this.repeat = repeate;
+    constructor(
+        readonly scene: Phaser.Scene,
+        readonly spritesheet: string,
+        readonly config: Record<string, Record<string, number[]>>,
+        readonly prefix = "",
+        readonly frameRate = defaultFrameRate,
+        readonly repeat = defaultRepeat) {
     }
     createAnimations() {
-        let animationGroups = new Map();
+        let animationGroups = new Map<string, string[]>();
         for (const key of Object.keys(this.config)) {
-          animationGroups.set(key, this.parseAnimationsGroup(this.prefix, key, this.config[key]));
+            animationGroups.set(key, this.parseAnimationsGroup(this.prefix, key, this.config[key]));
         }
         return animationGroups;
     }
 
-    parseAnimationsGroup(prefix, groupName, animations) {
+    parseAnimationsGroup(prefix: string, groupName: string, animations: Record<string, number[]>) {
         let animationsNames = [];
         for (const key of Object.keys(animations)) {
             const name = prefix + groupName + key;
@@ -35,13 +34,12 @@ export default class AnimationLoader {
         return animationsNames;
     }
     // Can be used to create single animation with modified properties
-    createAnimation(name, frames, frameRate, repeat)
-    {
+    createAnimation(name: string, frames: number[], frameRate: number, repeat: number) {
         this.scene.anims.create({
             key: name,
-            frames: this.scene.anims.generateFrameNumbers(this.spritesheet, { frames: frames }),
-            frameRate: frameRate,
-            repeat: repeat
+            frames: this.scene.anims.generateFrameNumbers(this.spritesheet, { frames }),
+            frameRate,
+            repeat
         });
     }
 }
