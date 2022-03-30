@@ -1,15 +1,15 @@
-import Phaser from "phaser";
-import EasyStar from "easystarjs"
+import Phaser from 'phaser';
+import EasyStar from 'easystarjs';
 
 /*
     Интерфейс сцены
     Здесь описываем требования к сцене, которые нужны для работы классов из src
 */
 export interface Scene extends Phaser.Scene {
-    readonly finder: EasyStar.js
-    readonly tileSize: number
-    tilesToPixels(tile: {x: number, y: number}): Phaser.Math.Vector2
-    pixelsToTiles(tile: {x: number, y: number}): Phaser.Math.Vector2
+	readonly finder: EasyStar.js;
+	readonly tileSize: number;
+	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
+	pixelsToTiles(tile: { x: number; y: number }): Phaser.Math.Vector2;
 }
 
 /*

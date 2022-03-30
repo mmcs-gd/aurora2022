@@ -9,15 +9,7 @@
 		"outDir": "dist",
 		"sourceMap": true,
 		"resolveJsonModule": true,
-		"lib": [
-			"dom",
-			"es6",
-			"scripthost",
-			"es2015.collection",
-			"es2019"
-		],
+		"lib": ["dom", "es6", "scripthost", "es2015.collection", "es2019"]
 	},
-	"include": [
-		"./src/**/*"
-	]
+	"include": ["./src/**/*"]
 }
