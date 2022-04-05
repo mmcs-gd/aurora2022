@@ -1,4 +1,7 @@
 export default class Player extends Phaser.Physics.Arcade.Sprite {
+
+	nearestObject: Phaser.GameObjects.GameObject[] = [];
+
 	constructor(
 		scene: Phaser.Scene,
 		x: number,
@@ -22,6 +25,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 		if (cursors.left.isDown) {
 			body.velocity.x -= speed;
+			//console.log(this.nearestObject.length);
+			//console.log(this.x + "   " + this.y)
+			//console.log(this.scene.children.list[2].body.position.x + "   " + this.scene.children.list[2].body.position.y)
 		} else if (cursors.right.isDown) {
 			body.velocity.x += speed;
 		}
@@ -34,6 +40,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		}
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
+		this.updateListNearestObjects();
 		this.updateAnimation();
 	}
 	updateAnimation() {
@@ -57,4 +64,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			}
 		}
 	}
+
+	//First element in list - Aurora.
+	private updateListNearestObjects() {
+		this.nearestObject = [];
+		const middleSpriteX = 15;
+		const middleSpriteY = 15;
+		const middleSpriteYJelly = 16;
+		this.scene.children.list.forEach(element => {
+			if (element.body != null){
+				if ((element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) * (element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) +
+					(element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) * (element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) <= 60*60
+					&& Math.round(this.x+15!) != Math.round(element.body.position.x) 
+					&& Math.round(this.y+15) != Math.round(element.body.position.y)) {
+						this.nearestObject.push(element);
+				}
+			}
+		});
+	}
+
+	pickJelly() {
+
+	}
+	
 }
