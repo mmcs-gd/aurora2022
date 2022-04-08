@@ -2,17 +2,17 @@
 import EasyStar from 'easystarjs';
 
 import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
-import dungeonRoomJson from '../assets/dungeon_room.json';
-import auroraSpriteSheet from '../assets/sprites/characters/aurora.png';
-import punkSpriteSheet from '../assets/sprites/characters/punk.png';
-import blueSpriteSheet from '../assets/sprites/characters/blue.png';
-import yellowSpriteSheet from '../assets/sprites/characters/yellow.png';
-import greenSpriteSheet from '../assets/sprites/characters/green.png';
-import slimeSpriteSheet from '../assets/sprites/characters/slime.png';
+import dungeonRoomJson from '../../assets/dungeon_room.json';
+import auroraSpriteSheet from '../../assets/sprites/characters/aurora.png';
+import punkSpriteSheet from '../../assets/sprites/characters/punk.png';
+import blueSpriteSheet from '../../assets/sprites/characters/blue.png';
+import yellowSpriteSheet from '../../assets/sprites/characters/yellow.png';
+import greenSpriteSheet from '../../assets/sprites/characters/green.png';
+import slimeSpriteSheet from '../../assets/sprites/characters/slime.png';
 import CharacterFactory, {
 	BuildSlimeOptions,
-} from '../src/characters/character_factory';
-import { Scene } from '../src/characters/scene';
+} from '../characters/character_factory';
+import { Scene } from '../characters/scene';
 
 class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();

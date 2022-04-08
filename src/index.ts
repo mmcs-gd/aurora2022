@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
-import StartingScene from '../scenes/starting-scene';
+import StartingScene from '../src/scenes/starting-scene';
+import TestSteerScene from '../src/scenes/test_steer';
 
 const config = {
 	type: Phaser.AUTO,
@@ -8,7 +9,8 @@ const config = {
 	height: 600,
 	pixelArt: true,
 	zoom: 1.2,
-	scene: StartingScene,
+	//scene: StartingScene,
+	scene: TestSteerScene,
 	physics: {
 		default: 'arcade',
 		arcade: {

@@ -4,6 +4,7 @@ import cyberpunkConfigJson from '../../assets/animations/cyberpunk.json';
 import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
+import TesterCh from './test_char';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -50,6 +51,30 @@ export default class CharacterFactory {
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for aurora`);
 		const character = new Player(
+			this.scene,
+			x,
+			y,
+			spriteSheetName,
+			2,
+			maxSpeed,
+			cursors,
+			animationSets
+		);
+		character.setCollideWorldBounds(true);
+		return character;
+	}
+
+	buildTestCharacter(
+		spriteSheetName: HumanSpriteSheetName,
+		x: number,
+		y: number
+	) {
+		const maxSpeed = 75;
+		const cursors = this.scene.input.keyboard.createCursorKeys();
+		const animationSets = this.animationLibrary['punk'];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for test`);
+		const character = new TesterCh(
 			this.scene,
 			x,
 			y,

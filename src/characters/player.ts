@@ -32,7 +32,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		} else if (cursors.down.isDown) {
 			body.setVelocityY(speed);
 		}
-		// Normalize and scale the velocity so that player can't move faster along a diagonal
+		// // Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateAnimation();
 	}
