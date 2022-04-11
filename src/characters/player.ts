@@ -1,3 +1,4 @@
+
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	nearestObject: Phaser.GameObjects.GameObject[] = [];
@@ -15,6 +16,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+		this.pickJelly();
 	}
 
 	update() {
@@ -42,6 +44,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		body.velocity.normalize().scale(speed);
 		this.updateListNearestObjects();
 		this.updateAnimation();
+		
 	}
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
@@ -85,7 +88,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	pickJelly() {
-		
+		this.scene.input.keyboard.on('keydown-Q', () => {
+			if (this.nearestObject.length != 0){
+				this.nearestObject.forEach(element => {
+					
+				});
+			}
+		});
 	}
 	
 }

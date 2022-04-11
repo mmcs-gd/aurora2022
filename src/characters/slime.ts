@@ -20,61 +20,70 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	}
 	pointOfInterest?: Vector2;
 	nextLocation?: Vector2;
+	activeJelly = true;
 	wantToJump = false;
 	path: { x: number; y: number }[] = [];
 	update() {
-		if (this.hasArrived()) {
-			this.pointOfInterest = new Vector2(
-				Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
-				Phaser.Math.RND.between(50, this.scene.physics.world.bounds.height - 50)
-			);
-			const { x: neededTileX, y: neededTileY } = this.scene.pixelsToTiles(
-				this.pointOfInterest
-			);
-			const { x: currentPositionX, y: currentPositionY } =
-				this.scene.pixelsToTiles(this.body);
-			if (!this.wantToJump) {
-				this.scene.finder.findPath(
-					currentPositionX,
-					currentPositionY,
-					neededTileX,
-					neededTileY,
-					path => {
-						if (path === null) {
-							console.warn('Slime says: Path was not found, gonna jump!');
-							this.path = [];
-							this.wantToJump = true;
-						} else {
-							this.path = path;
-							console.log('Slime says: Path was found, need to go...');
-							this.selectNextLocation();
-						}
-					}
+		if (this.activeJelly == true) //Flag active for pick jelly./Флаг для остановки Желешек на руках Авроры, чтоб они не ходили.
+		{ 
+			if (this.hasArrived()) {
+				this.pointOfInterest = new Vector2(
+					Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
+					Phaser.Math.RND.between(50, this.scene.physics.world.bounds.height - 50)
 				);
-				this.scene.finder.calculate();
-			}
-		}
-		if (this.nextLocation) {
-			const body = this.body as Phaser.Physics.Arcade.Body;
-			const position = body.position;
-
-			if (position.distance(this.nextLocation) < eps) {
-				this.selectNextLocation();
-			} else {
-				let delta = Math.round(this.nextLocation.x - position.x);
-				if (delta !== 0) {
-					body.setVelocity(delta, 0);
-				} else {
-					delta = Math.round(this.nextLocation.y - position.y);
-
-					body.setVelocity(0, delta);
+				const { x: neededTileX, y: neededTileY } = this.scene.pixelsToTiles(
+					this.pointOfInterest
+				);
+				const { x: currentPositionX, y: currentPositionY } =
+					this.scene.pixelsToTiles(this.body);
+				if (!this.wantToJump) {
+					this.scene.finder.findPath(
+						currentPositionX,
+						currentPositionY,
+						neededTileX,
+						neededTileY,
+						path => {
+							if (path === null) {
+								console.warn('Slime says: Path was not found, gonna jump!');
+								this.path = [];
+								this.wantToJump = true;
+							} else {
+								this.path = path;
+								console.log('Slime says: Path was found, need to go...');
+								this.selectNextLocation();
+							}
+						}
+					);
+					this.scene.finder.calculate();
 				}
-				this.body.velocity
-					.normalize()
-					.scale(Math.min(Math.abs(delta), this.speed));
+			}
+		
+			if (this.nextLocation) {
+				const body = this.body as Phaser.Physics.Arcade.Body;
+				const position = body.position;
+
+				if (position.distance(this.nextLocation) < eps) {
+					this.selectNextLocation();
+				} else {
+					let delta = Math.round(this.nextLocation.x - position.x);
+					if (delta !== 0) {
+						body.setVelocity(delta, 0);
+					} else {
+						delta = Math.round(this.nextLocation.y - position.y);
+
+						body.setVelocity(0, delta);
+					}
+					this.body.velocity
+						.normalize()
+						.scale(Math.min(Math.abs(delta), this.speed));
+				}
 			}
 		}
 		this.updateAnimation();
+	}
+
+	setActive() {
+		
 	}
 
 	updateAnimation() {
