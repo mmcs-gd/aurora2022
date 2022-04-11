@@ -25,7 +25,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 		if (cursors.left.isDown) {
 			body.velocity.x -= speed;
-			//console.log(this.nearestObject.length);
+			console.log(this.nearestObject.length);
 			//console.log(this.x + "   " + this.y)
 			//console.log(this.scene.children.list[2].body.position.x + "   " + this.scene.children.list[2].body.position.y)
 		} else if (cursors.right.isDown) {
@@ -77,14 +77,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 					(element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) * (element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) <= 60*60
 					&& Math.round(this.x+15!) != Math.round(element.body.position.x) 
 					&& Math.round(this.y+15) != Math.round(element.body.position.y)) {
-						this.nearestObject.push(element);
+						if (this != element)
+							this.nearestObject.push(element);
 				}
 			}
 		});
 	}
 
 	pickJelly() {
-
+		
 	}
 	
 }
