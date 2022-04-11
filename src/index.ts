@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import StartingScene from '../scenes/starting-scene';
+import testEugeneScene from '../scenes/testEugeneScene';
 
 const config = {
 	type: Phaser.AUTO,
@@ -8,7 +8,7 @@ const config = {
 	height: 600,
 	pixelArt: true,
 	zoom: 1.2,
-	scene: StartingScene,
+	scene: testEugeneScene,
 	physics: {
 		default: 'arcade',
 		arcade: {

@@ -82,10 +82,6 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		this.updateAnimation();
 	}
 
-	setActive() {
-		
-	}
-
 	updateAnimation() {
 		const animsController = this.anims;
 		if (this.wantToJump) {

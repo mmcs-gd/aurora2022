@@ -1,5 +1,6 @@
 import Slime from './slime';
 import Player from './player';
+import Corrol from './corrol';
 import cyberpunkConfigJson from '../../assets/animations/cyberpunk.json';
 import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
@@ -96,5 +97,28 @@ export default class CharacterFactory {
 				return 'Violet';
 		}
 		throw new Error(`Unknown slime with number ${n}`);
+	}
+
+	buildCorrol(
+		x: number,
+		y: number, 
+		width: number, 
+		height: number
+	) {
+		const animationSets = this.animationLibrary['aurora'];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for corrol`);
+		const character = new Corrol(
+			this.scene,
+			x,
+			y,
+			"corrol",
+			4,
+			width,
+			height,
+			animationSets
+		);
+		character.setCollideWorldBounds(true);
+		return character;
 	}
 }

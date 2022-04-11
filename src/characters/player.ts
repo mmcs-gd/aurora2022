@@ -1,7 +1,10 @@
 
+import Slime from "./slime";
+
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	nearestObject: Phaser.GameObjects.GameObject[] = [];
+	jellyInHands?: Slime = undefined;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -27,9 +30,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 		if (cursors.left.isDown) {
 			body.velocity.x -= speed;
-			console.log(this.nearestObject.length);
-			//console.log(this.x + "   " + this.y)
-			//console.log(this.scene.children.list[2].body.position.x + "   " + this.scene.children.list[2].body.position.y)
 		} else if (cursors.right.isDown) {
 			body.velocity.x += speed;
 		}
@@ -40,6 +40,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		} else if (cursors.down.isDown) {
 			body.setVelocityY(speed);
 		}
+
+		this.jellyInHands?.body.position.set(this.body.position.x + 35, this.body.position.y);
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateListNearestObjects();
@@ -86,15 +88,25 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			}
 		});
 	}
-
+	// Взять желешку работает, но нужно дописать метод следования за Авророй (перед ней). 
 	pickJelly() {
 		this.scene.input.keyboard.on('keydown-Q', () => {
-			if (this.nearestObject.length != 0){
-				this.nearestObject.forEach(element => {
-					
-				});
-			}
+			if (this.jellyInHands != undefined){
+				console.log("pidor")
+				this.jellyInHands.activeJelly = true;
+				this.jellyInHands = undefined;
+			}else{
+				if (this.nearestObject.length != 0){
+					this.nearestObject.forEach(element => {
+						if (element instanceof  Slime) {
+							const nearSlime = element as Slime;
+							nearSlime.activeJelly = false;
+							this.jellyInHands = nearSlime;
+							return;
+						}
+					});
+				}
+			}	
 		});
 	}
-	
 }
