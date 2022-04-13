@@ -72,11 +72,10 @@ class TestSteerScene extends Phaser.Scene implements Scene {
 
 		//Adding Steering
 		player.addSteering(new Wander(player, this.gameObjects, 1));
-
+		
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
-
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
 	}

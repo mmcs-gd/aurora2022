@@ -58,6 +58,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 			const col = [];
 			for (let x = 0; x < worldLayer.tilemap.width; x++) {
 				const tile = worldLayer.tilemap.getTileAt(x, y);
+
 				col.push(tile ? tile.index : 0);
 			}
 			grid.push(col);
@@ -93,6 +94,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 			params.slimeType = Phaser.Math.RND.between(0, 4);
 
 			const slime = characterFactory.buildSlime(x, y, params);
+			
 			slimes.add(slime);
 			this.physics.add.collider(slime, worldLayer);
 			this.gameObjects.push(slime);
