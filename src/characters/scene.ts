@@ -1,5 +1,7 @@
-import Phaser from 'phaser';
+import Phaser, { Physics } from 'phaser';
 import EasyStar from 'easystarjs';
+import Player from './player';
+import Slime from './slime';
 
 /*
     Интерфейс сцены
@@ -8,6 +10,9 @@ import EasyStar from 'easystarjs';
 export interface Scene extends Phaser.Scene {
 	readonly finder: EasyStar.js;
 	readonly tileSize: number;
+    readonly player: Player;
+    readonly slimes: Slime[];
+    readonly slimesGroup: Physics.Arcade.Group;
 	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
 	pixelsToTiles(tile: { x: number; y: number }): Phaser.Math.Vector2;
 }

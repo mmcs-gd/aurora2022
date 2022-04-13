@@ -14,8 +14,13 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import Corrol from '../src/characters/corrol';
+import Player from '../src/characters/player';
+import Slime from '../src/characters/slime';
 
 class StartingScene extends Phaser.Scene implements Scene {
+	slimes: Slime[] = [];
+	slimesGroup: Phaser.Physics.Arcade.Group = {} as any; // crutch!;
+	player: Player = {} as any; // crutch!
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
@@ -77,14 +82,11 @@ class StartingScene extends Phaser.Scene implements Scene {
 		const characterFactory = new CharacterFactory(this);
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
+		this.player = player;
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
-        const corrol = characterFactory.buildCorrol(150,150,300,300);
-        this.gameObjects.push(corrol);
-        this.physics.add.collider(corrol, worldLayer);
-
-		const slimes = this.physics.add.group();
+		const slimes = this.slimesGroup = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
 		for (let i = 0; i < 30; i++) {
 			const x = Phaser.Math.RND.between(
@@ -99,10 +101,14 @@ class StartingScene extends Phaser.Scene implements Scene {
 
 			const slime = characterFactory.buildSlime(x, y, params);
 			slimes.add(slime);
+			this.slimes.push(slime);
 			this.physics.add.collider(slime, worldLayer);
 			this.gameObjects.push(slime);
 		}
 		this.physics.add.collider(player, slimes);
+
+		const corrol = characterFactory.buildCorrol(150,150,300,300);
+        this.gameObjects.push(corrol);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

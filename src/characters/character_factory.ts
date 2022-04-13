@@ -112,13 +112,12 @@ export default class CharacterFactory {
 			this.scene,
 			x,
 			y,
-			"corrol",
+			"aurora",
 			4,
 			width,
 			height,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
 		return character;
 	}
 }

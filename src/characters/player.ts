@@ -77,6 +77,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const middleSpriteY = 15;
 		const middleSpriteYJelly = 16;
 		this.scene.children.list.forEach(element => {
+			// (element.body as Phaser.Physics.Arcade.Body).
 			if (element.body != null){
 				if ((element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) * (element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) +
 					(element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) * (element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) <= 60*60
@@ -92,7 +93,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	pickJelly() {
 		this.scene.input.keyboard.on('keydown-Q', () => {
 			if (this.jellyInHands != undefined){
-				console.log("pidor")
 				this.jellyInHands.activeJelly = true;
 				this.jellyInHands = undefined;
 			}else{
