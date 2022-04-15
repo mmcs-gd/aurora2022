@@ -11,12 +11,12 @@ export class ScoutedMap {
 		return this.scoutedCells.get(key_point(x, y));
 	}
 
-	public get_all(): ScoutedCell[] {
+	public getAll(): ScoutedCell[] {
 		return Array.from(this.scoutedCells.values());
 	}
 
 	public merge(other: ScoutedMap) {
-		for (const cell of other.get_all()) {
+		for (const cell of other.getAll()) {
 			const self_cell = this.get(cell.x, cell.y);
 			if (self_cell === undefined || self_cell.timestamp < cell.timestamp) {
 				this.set(cell);

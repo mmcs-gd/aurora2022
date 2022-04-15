@@ -6,7 +6,9 @@ import { CellType, ScoutedCell, ScoutedPortal } from '../ai/scouting_map/cells';
 const eps = 20;
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
-	private scoutedPortal: undefined | ScoutedPortal = undefined;
+	private scoutedPortal: ScoutedPortal | null = null;
+	// TODO: надо сделать, когда Аврора научится думать
+	private pickPoint: ScoutedCell | null = null;
 
 	constructor(
 		public scene: Scene,
@@ -125,5 +127,15 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		} else {
 			this.nextLocation = this.body.position;
 		}
+	}
+
+	get visitInformation(): {
+		scoutedPortal: ScoutedPortal | null;
+		pickPoint: ScoutedCell | null;
+	} {
+		return {
+			scoutedPortal: this.scoutedPortal,
+			pickPoint: this.pickPoint,
+		};
 	}
 }

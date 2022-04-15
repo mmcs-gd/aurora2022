@@ -13,7 +13,7 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
-import { ScoutedCell, ScoutedPortal } from '../src/ai/scouting_map/cells';
+import { ScoutedPortal } from '../src/ai/scouting_map/cells';
 
 class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();

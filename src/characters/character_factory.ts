@@ -76,7 +76,8 @@ export default class CharacterFactory {
 			slimeSpriteSheet,
 			9 * slimeType,
 			speed,
-			animations
+			animations,
+			2
 		);
 		slime.setCollideWorldBounds(true);
 		return slime;
