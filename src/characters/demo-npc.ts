@@ -1,10 +1,13 @@
-export default class Player extends Phaser.Physics.Arcade.Sprite {
+import Steering from '../ai/steerings/steering';
+
+export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 	constructor(
 		scene: Phaser.Scene,
 		x: number,
 		y: number,
 		name: string,
 		frame: string | number,
+
 		readonly maxSpeed: number,
 		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>
@@ -12,38 +15,45 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+		this.setVelocity(1);
+	}
+
+	protected steerings: Steering[] = [];
+	protected last = Date.now();
+
+	addSteering(steering: Steering) {
+		this.steerings.push(steering);
 	}
 
 	update() {
 		const body = this.body as Phaser.Physics.Arcade.Body;
-		body.setVelocity(0);
-		const speed = this.maxSpeed;
-		const cursors = this.cursors;
+		let imp;
+		this.steerings.forEach(st => {
+			imp = st.calculateImpulse();
+			body.velocity.x += imp.x * st.force;
+			body.velocity.y += imp.y * st.force;
+		});
 
-		if (cursors.left.isDown) {
-			body.velocity.x -= speed;
-		} else if (cursors.right.isDown) {
-			body.velocity.x += speed;
-		}
+		body.velocity.normalize().scale(this.maxSpeed);
 
-		// Vertical movement
-		if (cursors.up.isDown) {
-			body.setVelocityY(-speed);
-		} else if (cursors.down.isDown) {
-			body.setVelocityY(speed);
+		//ограничиваем частоту обновления анимаций
+		if (Date.now() - this.last > 600) {
+			this.updateAnimation();
+			this.last = Date.now();
 		}
-		// // Normalize and scale the velocity so that player can't move faster along a diagonal
-		body.velocity.normalize().scale(speed);
-		this.updateAnimation();
 	}
+
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
 		const animsController = this.anims;
 		const x = this.body.velocity.x;
 		const y = this.body.velocity.y;
-		if (x < 0) {
+
+		const eps = 40;
+
+		if (x < -eps) {
 			animsController.play(animations[0], true);
-		} else if (x > 0) {
+		} else if (x > eps) {
 			animsController.play(animations[1], true);
 		} else if (y < 0) {
 			animsController.play(animations[2], true);

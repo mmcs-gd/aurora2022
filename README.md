@@ -41,6 +41,9 @@ npm run lint:fix
     [eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
   есть плагины, если студия и линтер будут требовать разного, то пофиксить можно ими.
 
+## Открытие нужной сцены, минуя меню
+Добавьте в URL параметр `openScene=<ключ сцены>`: `localhost:1234/?openScene=StartingScene`
+
 # Build
 
 ```

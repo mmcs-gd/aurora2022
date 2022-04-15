@@ -1,4 +1,4 @@
-import Steering from './steering.js';
+import Steering from './steering';
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
