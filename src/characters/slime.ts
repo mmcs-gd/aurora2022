@@ -6,7 +6,7 @@ import { CellType, ScoutedCell, ScoutedPortal } from '../ai/scouting_map/cells';
 const eps = 20;
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
-	private scoutedPortal: undefined | ScoutedPortal = undefined
+	private scoutedPortal: undefined | ScoutedPortal = undefined;
 
 	constructor(
 		public scene: Scene,
@@ -16,7 +16,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		frame: number,
 		readonly speed: number,
 		readonly animations: string[],
-		private sightDistance: number,
+		private sightDistance: number
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -90,11 +90,15 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 			x - halfSight,
 			y - halfSight,
 			this.sightDistance,
-			this.sightDistance,
-		)
-		const portals = this.scene.getPortals(visionRectangle)
+			this.sightDistance
+		);
+		const portals = this.scene.getPortals(visionRectangle);
 		if (portals.length > 0) {
-			this.scoutedPortal = portals[0]
+			this.scoutedPortal = {
+				...portals[0],
+				type: CellType.Portal,
+				timestamp: this.scene.time.now,
+			};
 		}
 	}
 
