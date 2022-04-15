@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import { Scene } from './scene';
+import { CellType, ScoutedCell, ScoutedPortal } from '../ai/scouting_map/cells';
 
 const eps = 20;
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
+	private scoutedPortal: undefined | ScoutedPortal = undefined
+
 	constructor(
 		public scene: Scene,
 		x: number,
@@ -12,7 +15,8 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		name: string,
 		frame: number,
 		readonly speed: number,
-		readonly animations: string[]
+		readonly animations: string[],
+		private sightDistance: number,
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -74,7 +78,24 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 					.scale(Math.min(Math.abs(delta), this.speed));
 			}
 		}
+
+		this.updateScouted();
 		this.updateAnimation();
+	}
+
+	updateScouted() {
+		const { x, y } = this.scene.pixelsToTiles({ x: this.x, y: this.y });
+		const halfSight = this.sightDistance / 2;
+		const visionRectangle = new Phaser.Geom.Rectangle(
+			x - halfSight,
+			y - halfSight,
+			this.sightDistance,
+			this.sightDistance,
+		)
+		const portals = this.scene.getPortals(visionRectangle)
+		if (portals.length > 0) {
+			this.scoutedPortal = portals[0]
+		}
 	}
 
 	updateAnimation() {

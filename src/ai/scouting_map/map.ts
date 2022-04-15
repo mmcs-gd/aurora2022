@@ -1,35 +1,27 @@
-export enum CellType {
-    Portal,
-    Empty,
-}
-
-export type ScoutedCell = {
-    type: CellType.Portal
-    timestamp: number,
-    capacity: number,
-    size: number,
-    x: number,
-    y: number,
-} | {
-    type: CellType.Empty,
-    timestamp: number,
-    x: number,
-    y: number,
-}
+import { ScoutedCell } from "./cells";
 
 export class ScoutedMap {
-    private scouted_cells: Map<string, ScoutedCell> = new Map()
+    private scoutedCells: Map<string, ScoutedCell> = new Map()
 
     public set(it: ScoutedCell) {
-        this.scouted_cells.set(key_point(it.x, it.y), it)
+        this.scoutedCells.set(key_point(it.x, it.y), it)
     }
 
     public get(x: number, y: number): ScoutedCell | undefined {
-        return this.scouted_cells.get(key_point(x, y))
+        return this.scoutedCells.get(key_point(x, y))
     }
 
-    public get_all(): IterableIterator<ScoutedCell> {
-        return this.scouted_cells.values();
+    public get_all(): ScoutedCell[] {
+        return Array.from(this.scoutedCells.values());
+    }
+
+    public merge(other: ScoutedMap) {
+        for (const cell of other.get_all()) {
+            const self_cell = this.get(cell.x, cell.y)
+            if (self_cell === undefined || self_cell.timestamp < cell.timestamp) {
+                this.set(cell)
+            }
+        }
     }
 }
 
