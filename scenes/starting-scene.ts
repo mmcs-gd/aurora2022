@@ -2,41 +2,24 @@
 import EasyStar from 'easystarjs';
 
 import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
-import dungeonRoomJson from '../../assets/dungeon_room.json';
-import auroraSpriteSheet from '../../assets/sprites/characters/aurora.png';
-import punkSpriteSheet from '../../assets/sprites/characters/punk.png';
-import blueSpriteSheet from '../../assets/sprites/characters/blue.png';
-import yellowSpriteSheet from '../../assets/sprites/characters/yellow.png';
-import greenSpriteSheet from '../../assets/sprites/characters/green.png';
-import slimeSpriteSheet from '../../assets/sprites/characters/slime.png';
+import dungeonRoomJson from '../assets/dungeon_room.json';
 import CharacterFactory, {
 	BuildSlimeOptions,
-} from '../characters/character_factory';
-import { Scene } from '../characters/scene';
+} from '../src/characters/character_factory';
+import { Scene } from '../src/characters/scene';
 
-class StartingScene extends Phaser.Scene implements Scene {
+export class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
-
-	initialize() {
-		Phaser.Scene.call(this, { key: 'StartingScene' });
+	constructor() {
+		super({ key: 'StartingScene' });
 	}
 
 	preload() {
-		const characterFrameConfig = { frameWidth: 31, frameHeight: 31 };
-		const slimeFrameConfig = { frameWidth: 32, frameHeight: 32 };
 		//loading map tiles and json with positions
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
-
-		//loading spitesheets
-		this.load.spritesheet('aurora', auroraSpriteSheet, characterFrameConfig);
-		this.load.spritesheet('blue', blueSpriteSheet, characterFrameConfig);
-		this.load.spritesheet('green', greenSpriteSheet, characterFrameConfig);
-		this.load.spritesheet('yellow', yellowSpriteSheet, characterFrameConfig);
-		this.load.spritesheet('punk', punkSpriteSheet, characterFrameConfig);
-		this.load.spritesheet('slime', slimeSpriteSheet, slimeFrameConfig);
 	}
 
 	create() {
@@ -94,7 +77,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 			params.slimeType = Phaser.Math.RND.between(0, 4);
 
 			const slime = characterFactory.buildSlime(x, y, params);
-			
+
 			slimes.add(slime);
 			this.physics.add.collider(slime, worldLayer);
 			this.gameObjects.push(slime);
@@ -137,5 +120,3 @@ class StartingScene extends Phaser.Scene implements Scene {
 		);
 	}
 }
-
-export default StartingScene;

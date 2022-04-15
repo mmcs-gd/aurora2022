@@ -1,33 +1,25 @@
 /// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
-import tilemapPng from '../../assets/tileset/Dungeon_Tileset.png';
-import dungeonRoomJson from '../../assets/dungeon_room.json';
-import punkSpriteSheet from '../../assets/sprites/characters/punk.png';
-import { Scene } from '../characters/scene';
-import CharacterFactory from '../characters/character_factory';
-import TesterCh from '../characters/test_char';
-import Steering from '../ai/steerings/steering';
-import { Wander } from '../ai/steerings/wander';
+import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
+import dungeonRoomJson from '../assets/dungeon_room.json';
+import { Scene } from '../src/characters/scene';
+import CharacterFactory from '../src/characters/character_factory';
+import Steering from '../src/ai/steerings/steering';
+import { Wander } from '../src/ai/steerings/wander';
 
-class TestSteerScene extends Phaser.Scene implements Scene {
+export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
 	steerings: Steering[] = [];
 
-	initialize() {
-		Phaser.Scene.call(this, { key: 'TestSteerScene' });
+	constructor() {
+		super({ key: 'SteeringDemo' });
 	}
 
 	preload() {
-		const characterFrameConfig = { frameWidth: 31, frameHeight: 31 };
-		const slimeFrameConfig = { frameWidth: 32, frameHeight: 32 };
-		//loading map tiles and json with positions
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
-
-		//loading spitesheets
-		this.load.spritesheet('punk', punkSpriteSheet, characterFrameConfig);
 	}
 
 	create() {
@@ -72,7 +64,7 @@ class TestSteerScene extends Phaser.Scene implements Scene {
 
 		//Adding Steering
 		player.addSteering(new Wander(player, this.gameObjects, 1));
-		
+
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
@@ -102,5 +94,3 @@ class TestSteerScene extends Phaser.Scene implements Scene {
 		);
 	}
 }
-
-export default TestSteerScene;

@@ -1,10 +1,6 @@
-import { Vector } from 'matter';
-import Vector2 = Phaser.Math.Vector2;
 import Steering from '../ai/steerings/steering';
-import { Wander } from '../ai/steerings/wander';
 
-
-export default class TesterCh extends Phaser.Physics.Arcade.Sprite {
+export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 	constructor(
 		scene: Phaser.Scene,
 		x: number,
@@ -15,7 +11,6 @@ export default class TesterCh extends Phaser.Physics.Arcade.Sprite {
 		readonly maxSpeed: number,
 		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>
-
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -42,12 +37,12 @@ export default class TesterCh extends Phaser.Physics.Arcade.Sprite {
 		body.velocity.normalize().scale(this.maxSpeed);
 
 		//ограничиваем частоту обновления анимаций
-        if (Date.now() - this.last > 600) {
+		if (Date.now() - this.last > 600) {
 			this.updateAnimation();
 			this.last = Date.now();
 		}
 	}
-	
+
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
 		const animsController = this.anims;

@@ -4,7 +4,7 @@ import cyberpunkConfigJson from '../../assets/animations/cyberpunk.json';
 import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
-import TesterCh from './test_char';
+import DemoNPC from './demo-npc';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -74,7 +74,7 @@ export default class CharacterFactory {
 		const animationSets = this.animationLibrary['punk'];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for test`);
-		const character = new TesterCh(
+		const character = new DemoNPC(
 			this.scene,
 			x,
 			y,
