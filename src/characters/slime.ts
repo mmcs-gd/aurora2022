@@ -1,14 +1,18 @@
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import { Scene } from './scene';
-import { CellType, ScoutedCell, ScoutedPortal } from '../ai/scouting_map/cells';
+import { CellType } from '../ai/scouting_map/cells';
+import { ScoutedMap } from '../ai/scouting_map/map';
+import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 
 const eps = 20;
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
-	private scoutedPortal: ScoutedPortal | null = null;
-	// TODO: надо сделать, когда Аврора научится думать
-	private pickPoint: ScoutedCell | null = null;
+	private targetPoint: {
+		x: number;
+		y: number;
+	} | null = null;
+	readonly scoutedMap = new ScoutedMap();
 
 	constructor(
 		public scene: Scene,
@@ -94,13 +98,25 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 			this.sightDistance,
 			this.sightDistance
 		);
-		const portals = this.scene.getPortals(visionRectangle);
-		if (portals.length > 0) {
-			this.scoutedPortal = {
-				...portals[0],
-				type: CellType.Portal,
-				timestamp: this.scene.time.now,
-			};
+		const now = this.scene.time.now;
+		for (let i = visionRectangle.left; i < visionRectangle.right; ++i) {
+			for (let j = visionRectangle.top; j < visionRectangle.bottom; ++j) {
+				const portal = this.scene.getPortal({ x, y });
+				this.scoutedMap.set(
+					portal
+						? {
+								...portal,
+								type: CellType.Portal,
+								timestamp: now,
+						  }
+						: {
+								x: x,
+								y: y,
+								type: CellType.Empty,
+								timestamp: now,
+						  }
+				);
+			}
 		}
 	}
 
@@ -129,13 +145,8 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		}
 	}
 
-	get visitInformation(): {
-		scoutedPortal: ScoutedPortal | null;
-		pickPoint: ScoutedCell | null;
-	} {
-		return {
-			scoutedPortal: this.scoutedPortal,
-			pickPoint: this.pickPoint,
-		};
+	arbitratorInteract(arbitrator: ArbitratorInstance) {
+		arbitrator.visitedBySlime(this);
+		this.targetPoint = arbitrator.getTarget();
 	}
 }

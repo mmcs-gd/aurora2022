@@ -15,6 +15,10 @@ export class ScoutedMap {
 		return Array.from(this.scoutedCells.values());
 	}
 
+	public clear() {
+		this.scoutedCells.clear();
+	}
+
 	public merge(other: ScoutedMap) {
 		for (const cell of other.getAll()) {
 			const self_cell = this.get(cell.x, cell.y);

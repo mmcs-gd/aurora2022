@@ -13,7 +13,7 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
-import { ScoutedPortal } from '../src/ai/scouting_map/cells';
+import { RawPortal } from '../src/ai/scouting_map/cells';
 
 class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -138,8 +138,8 @@ class StartingScene extends Phaser.Scene implements Scene {
 
 	// TODO: Доставать настоящие координаты порталов.
 	// Обрати внимание, что они должны содердать координаты ячеек, а не тайлов
-	getPortals(rectangle: Phaser.Geom.Rectangle): ScoutedPortal[] {
-		return [];
+	getPortal(tile: { x: number; y: number }): RawPortal | null {
+		return null;
 	}
 }
 
