@@ -107,7 +107,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 		}
 		this.physics.add.collider(player, slimes);
 
-		const corrol = characterFactory.buildCorrol(150,150,300,300);
+		const corrol = characterFactory.buildCorrol(150,450,100,150);
         this.gameObjects.push(corrol);
 
 		this.input.keyboard.on('keydown-D', () => {

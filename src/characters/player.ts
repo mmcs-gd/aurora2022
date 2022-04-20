@@ -41,7 +41,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			body.setVelocityY(speed);
 		}
 
-		this.jellyInHands?.body.position.set(this.body.position.x + 35, this.body.position.y);
+		this.jellyInHands?.body.position.set(this.body.position.x, this.body.position.y+3);
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateListNearestObjects();
