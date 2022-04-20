@@ -12,7 +12,7 @@ import { Scene } from '../src/characters/scene';
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
-	tileSize = 32;
+	tileSize = 36;
 	constructor() {
 		super({ key: 'MapDemo' });
 	}
@@ -34,7 +34,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 		// Parameters: layer name (or index) from Tiled, tileset, x, y
 		// const belowLayer = map.createLayer('Floor', tileset, 0, 0);
-		const worldLayer = map.createLayer('Walls', tileset2, 0, 0);
+		const worldLayer = map.createLayer('Ground (Layer 1)', tileset2, 0, 0);
 		// const aboveLayer = map.createLayer('Door', tileset2, 0, 0);
 
 		// Setup for A-star
@@ -55,7 +55,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 		// Setup for collisions
 		worldLayer.setCollisionBetween(1, 500);
-		aboveLayer.setDepth(10);
+		// aboveLayer.setDepth(10);
 
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
