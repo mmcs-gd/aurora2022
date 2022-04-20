@@ -6,6 +6,7 @@ import { Scene } from '../src/characters/scene';
 import CharacterFactory from '../src/characters/character_factory';
 import Steering from '../src/ai/steerings/steering';
 import { Wander } from '../src/ai/steerings/wander';
+import Vector2 = Phaser.Math.Vector2;
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -59,8 +60,22 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		const characterFactory = new CharacterFactory(this);
 		//Creating characters
 		const player = characterFactory.buildTestCharacter('punk', 100, 100);
+		player.setBodySize(80,80,true);
+		player.setCollideWorldBounds(true);
+
 		this.gameObjects.push(player);
-		this.physics.add.collider(player, worldLayer);
+		this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
+			const obstacleBody = worldLayer as Phaser.Physics.Arcade.Sprite;
+			
+			const playerChar = player as Phaser.Physics.Arcade.Sprite;
+
+			const ahead = playerChar.body.velocity.scale(this.tileSize*2);
+			const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+
+			const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
+			playerChar.body.velocity.add(avoidenceForce);
+			
+		});
 
 		//Adding Steering
 		player.addSteering(new Wander(player, this.gameObjects, 1));
