@@ -23,13 +23,20 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 
 	addSteering(steering: Steering) {
 		this.steerings.push(steering);
+		console.log("приследую");
 	}
 
+	updateSteering(steering:Steering)
+	{	
+		this.steerings[0]=steering;
+	}
+	
 	update() {
 		const body = this.body as Phaser.Physics.Arcade.Body;
 		let imp;
 		this.steerings.forEach(st => {
 			imp = st.calculateImpulse();
+			console.log(" imp x : "+ imp.x+"imp y:"+ imp.y);
 			body.velocity.x += imp.x * st.force;
 			body.velocity.y += imp.y * st.force;
 		});

@@ -6,14 +6,19 @@ import { Scene } from '../src/characters/scene';
 import CharacterFactory from '../src/characters/character_factory';
 import Steering from '../src/ai/steerings/steering';
 import { Wander } from '../src/ai/steerings/wander';
+import { GoInPoint } from '../src/ai/steerings/go-point';
+import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
+import Player from '../src/characters/player';
+import DemoNPC from '../src/characters/demo-npc';
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
 	steerings: Steering[] = [];
-
+	playerPrefab?:Player;
+	
 	constructor() {
 		super({ key: 'SteeringDemo' });
 	}
@@ -58,13 +63,18 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
+
+		 const player1 = characterFactory.buildPlayerCharacter('aurora', 100, 100);
+		 this.gameObjects.push(player1);
+		 this.physics.add.collider(player1, worldLayer);
 		//Creating characters
 		const player = characterFactory.buildTestCharacter('punk', 100, 100);
-		player.setBodySize(80,80,true);
+		player.setBodySize(40,40,true);
 		player.setCollideWorldBounds(true);
-
+		this.playerPrefab=player1;
 		this.gameObjects.push(player);
-		this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
+		this.physics.add.collider(player, player1);
+		/*this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
 			const obstacleBody = worldLayer as Phaser.Physics.Arcade.Sprite;
 			
 			const playerChar = player as Phaser.Physics.Arcade.Sprite;
@@ -75,10 +85,13 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
 			playerChar.body.velocity.add(avoidenceForce);
 			
-		});
+		});*/
 
 		//Adding Steering
-		player.addSteering(new Wander(player, this.gameObjects, 1));
+		//player.addSteering(new Wander(player, this.gameObjects, 1));
+		const massiv: Phaser.Physics.Arcade.Sprite[] = [];
+			if (player1 != null) massiv.push(player1);
+		player.addSteering(new GoInPoint(player, massiv, 1));
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
@@ -91,7 +104,13 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		if (this.gameObjects) {
 			this.gameObjects.forEach(function (element) {
 				element.update();
+				if(element instanceof DemoNPC)
+				{
+					//console.log("DemoNPC");
+				}
 			});
+
+
 		}
 	}
 
@@ -108,4 +127,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			Math.floor(pixels.y / this.tileSize)
 		);
 	}
+
+	getPortal(tile: { x: number; y: number }): RawPortal | null {
+		return null;
+	  }
 }
