@@ -11,6 +11,7 @@ import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
 import Player from '../src/characters/player';
 import DemoNPC from '../src/characters/demo-npc';
+import { Escape } from '../src/ai/steerings/escape';
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -69,12 +70,12 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		 this.physics.add.collider(player1, worldLayer);
 		//Creating characters
 		const player = characterFactory.buildTestCharacter('punk', 100, 100);
-		player.setBodySize(40,40,true);
+		player.setBodySize(40,50,true);
 		player.setCollideWorldBounds(true);
 		this.playerPrefab=player1;
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, player1);
-		/*this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
+		this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
 			const obstacleBody = worldLayer as Phaser.Physics.Arcade.Sprite;
 			
 			const playerChar = player as Phaser.Physics.Arcade.Sprite;
@@ -85,13 +86,16 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
 			playerChar.body.velocity.add(avoidenceForce);
 			
-		});*/
+		});
 
 		//Adding Steering
 		//player.addSteering(new Wander(player, this.gameObjects, 1));
+		// const massiv: Phaser.Physics.Arcade.Sprite[] = [];
+			// if (player1 != null) massiv.push(player1);
+		// player.addSteering(new GoInPoint(player, massiv, 1));
 		const massiv: Phaser.Physics.Arcade.Sprite[] = [];
 			if (player1 != null) massiv.push(player1);
-		player.addSteering(new GoInPoint(player, massiv, 1));
+		player.addSteering(new Escape(player, massiv, 1,500));
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

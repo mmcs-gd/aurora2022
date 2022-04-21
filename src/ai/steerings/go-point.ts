@@ -17,7 +17,7 @@ export class GoInPoint extends Steering {
 		
 		//const target = this.objects[0].body.position;
 		const target = this.objects[0];
-		console.log("x:"+ target.x+"y:" +target.y);
+		//console.log("x:"+ this.owner.body.position.x+"y:" +this.owner.body.position.y);
 		const toTarget = new Vector2(
 			//this.owner.body.position.x - target.x,
 			//this.owner.body.position.y - target.y
