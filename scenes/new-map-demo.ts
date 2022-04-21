@@ -10,18 +10,18 @@ import { Scene } from '../src/characters/scene';
 
 type LayerDesctiption = {
 	depth?: number;
-	astar?: boolean;
+	collide?: boolean;
 };
 
 const layersSettings = {
 	/** Нижний слой с землёй и декором */
 	Ground: {} as LayerDesctiption,
 	/** Стены, вода */
-	Walls: { astar: true } as LayerDesctiption,
+	Walls: { collide: true } as LayerDesctiption,
 	/** Одиночные препятствия (камни, пни) */
-	Obstacles: { astar: true } as LayerDesctiption,
+	Obstacles: { collide: true } as LayerDesctiption,
 	/** Стены загона  - возможно, отдельный слой не нужен */
-	'Corral.Walls': { astar: true } as LayerDesctiption,
+	'Corral.Walls': { collide: true } as LayerDesctiption,
 	/** Двери загона  - возможно, отдельный слой не нужен */
 	'Corral.Doors': {} as LayerDesctiption,
 	/** Арбитр в загоне - возможно, отдельный слой не нужен */
@@ -60,14 +60,13 @@ function setupFinder(
 		const col = [];
 		for (let x = 0; x < tilemap.width; x++) {
 			const tile = collidesLayers.reduce(
-				(tile, layer) => tile || tilemap.getTileAt(x, y, false, layer),
-				null as Phaser.Tilemaps.Tile | null
+				(tile, layer) => tile || tilemap.getTileAt(x, y, false, layer)?.index,
+				null as number | null
 			);
-			col.push(tile ? tile.index : 0);
+			col.push(tile ? tile : 0);
 		}
 		grid.push(col);
 	}
-
 	finder.setGrid(grid);
 	finder.setAcceptableTiles([0]);
 }
@@ -81,7 +80,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	}
 
 	preload() {
-		//loading map tiles and json with positions
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', tilemapJson);
 	}
@@ -89,16 +87,11 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	create() {
 		const map = this.make.tilemap({ key: 'map' });
 
-		// Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
-		// Phaser's cache (i.e. the name you used in preload)
-		// const tileset = map.addTilesetImage('Dungeon_Tileset(new)', 'tiles');
 		const tileset = map.addTilesetImage('Green_Meadow_Tileset', 'tiles');
 
-		// Parameters: layer name (or index) from Tiled, tileset, x, y
-		// const belowLayer = map.createLayer('Floor', tileset, 0, 0);
 		const layers = createLayers(map, tileset, layersSettings);
 		const collidesLayers = Object.entries<LayerDesctiption>(layersSettings)
-			.filter(([, { astar }]) => astar)
+			.filter(([, { collide: astar }]) => astar)
 			.map(([key]) => key as keyof typeof layersSettings);
 		setupFinder(this.finder, map, collidesLayers);
 		// Setup for collisions
@@ -109,7 +102,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 		const characterFactory = new CharacterFactory(this);
 		// Creating characters
-		const player = characterFactory.buildPlayerCharacter('aurora', 200, 100);
+		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
 		this.gameObjects.push(player);
 
 		const slimes = this.physics.add.group();
@@ -138,20 +131,14 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
-
+		// Устанавливаем коллизии с окружением для игрока и npc
 		collidesLayers.forEach(layerID => {
-			layers[layerID].setCollisionBetween(1, 500);
+			layers[layerID].setCollisionBetween(1, 5000);
 			this.physics.add.collider(player, layers[layerID]);
 			this.physics.add.collider(slimes, layers[layerID]);
 		});
 	}
 
-	/*
-	Хотя метод update у спрайтов встроен в Phaser и в v2 вызывался автоматически (что логично ожидать),
-	в v3 из-за новых архитектурных решений это изменилось https://github.com/photonstorm/phaser/pull/3379.
-	Поэтому нужно обновлять спрайты в сцене самостоятельно.
-	В v4 обещают опять переделать.
-	*/
 	update() {
 		if (this.gameObjects) {
 			this.gameObjects.forEach(function (element) {
