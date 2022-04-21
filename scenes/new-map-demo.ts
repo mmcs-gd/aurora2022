@@ -1,13 +1,76 @@
 /// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
 
-import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
-import tilemapPng2 from '../assets/tileset/Green_Meadow_Tileset.png';
-import dungeonRoomJson from '../assets/green_meadow.json';
+import tilemapPng from '../assets/tileset/Green_Meadow_Tileset.png';
+import tilemapJson from '../assets/green_meadow.json';
 import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
+
+type LayerDesctiption = {
+	depth?: number;
+	astar?: boolean;
+};
+
+const layersSettings = {
+	/** Нижний слой с землёй и декором */
+	Ground: {} as LayerDesctiption,
+	/** Стены, вода */
+	Walls: { astar: true } as LayerDesctiption,
+	/** Одиночные препятствия (камни, пни) */
+	Obstacles: { astar: true } as LayerDesctiption,
+	/** Стены загона  - возможно, отдельный слой не нужен */
+	'Corral.Walls': { astar: true } as LayerDesctiption,
+	/** Двери загона  - возможно, отдельный слой не нужен */
+	'Corral.Doors': {} as LayerDesctiption,
+	/** Арбитр в загоне - возможно, отдельный слой не нужен */
+	'Corral.Arbitrator': { depth: 10 } as LayerDesctiption,
+	/** Арбитр снаружи - возможно, отдельный слой не нужен */
+	Arbitrator: { depth: 10 } as LayerDesctiption,
+	/** Декор сверху (кроны деревьев) */
+	Transparent: { depth: 10 } as LayerDesctiption,
+};
+
+/**
+ * Вспомогательная функция для создания слоёв по описанию в виде объекта,
+ * потому что мне надоело хардкодить-копипастить
+ */
+function createLayers<T extends string>(
+	map: Phaser.Tilemaps.Tilemap,
+	tileset: Phaser.Tilemaps.Tileset,
+	layersSettings: Record<T, LayerDesctiption>
+): Record<T, Phaser.Tilemaps.TilemapLayer> {
+	const layers = {} as Record<T, Phaser.Tilemaps.TilemapLayer>;
+	for (const layerID in layersSettings) {
+		layers[layerID] = map.createLayer(layerID, tileset, 0, 0);
+		const depth = layersSettings[layerID].depth;
+		if (depth !== undefined) layers[layerID].setDepth(depth);
+	}
+	return layers;
+}
+
+function setupFinder(
+	finder: EasyStar.js,
+	tilemap: Phaser.Tilemaps.Tilemap,
+	collidesLayers: string[]
+): void {
+	const grid = [];
+	for (let y = 0; y < tilemap.height; y++) {
+		const col = [];
+		for (let x = 0; x < tilemap.width; x++) {
+			const tile = collidesLayers.reduce(
+				(tile, layer) => tile || tilemap.getTileAt(x, y, false, layer),
+				null as Phaser.Tilemaps.Tile | null
+			);
+			col.push(tile ? tile.index : 0);
+		}
+		grid.push(col);
+	}
+
+	finder.setGrid(grid);
+	finder.setAcceptableTiles([0]);
+}
 
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -19,9 +82,8 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 	preload() {
 		//loading map tiles and json with positions
-		// this.load.image('tiles', tilemapPng);
-		this.load.image('tiles2', tilemapPng2);
-		this.load.tilemapTiledJSON('map', dungeonRoomJson);
+		this.load.image('tiles', tilemapPng);
+		this.load.tilemapTiledJSON('map', tilemapJson);
 	}
 
 	create() {
@@ -30,41 +92,25 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
 		// Phaser's cache (i.e. the name you used in preload)
 		// const tileset = map.addTilesetImage('Dungeon_Tileset(new)', 'tiles');
-		const tileset2 = map.addTilesetImage('Green_Meadow_Tileset', 'tiles2');
+		const tileset = map.addTilesetImage('Green_Meadow_Tileset', 'tiles');
 
 		// Parameters: layer name (or index) from Tiled, tileset, x, y
 		// const belowLayer = map.createLayer('Floor', tileset, 0, 0);
-		const worldLayer = map.createLayer('Ground (Layer 1)', tileset2, 0, 0);
-		// const aboveLayer = map.createLayer('Door', tileset2, 0, 0);
-
-		// Setup for A-star
-		// this.finder = new EasyStar.js();
-		const grid = [];
-		for (let y = 0; y < worldLayer.tilemap.height; y++) {
-			const col = [];
-			for (let x = 0; x < worldLayer.tilemap.width; x++) {
-				const tile = worldLayer.tilemap.getTileAt(x, y);
-
-				col.push(tile ? tile.index : 0);
-			}
-			grid.push(col);
-		}
-
-		this.finder.setGrid(grid);
-		this.finder.setAcceptableTiles([0]);
-
+		const layers = createLayers(map, tileset, layersSettings);
+		const collidesLayers = Object.entries<LayerDesctiption>(layersSettings)
+			.filter(([, { astar }]) => astar)
+			.map(([key]) => key as keyof typeof layersSettings);
+		setupFinder(this.finder, map, collidesLayers);
 		// Setup for collisions
-		worldLayer.setCollisionBetween(1, 500);
-		// aboveLayer.setDepth(10);
+		console.log(collidesLayers);
 
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
 		// Creating characters
-		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
+		const player = characterFactory.buildPlayerCharacter('aurora', 200, 100);
 		this.gameObjects.push(player);
-		this.physics.add.collider(player, worldLayer);
 
 		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
@@ -82,7 +128,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			const slime = characterFactory.buildSlime(x, y, params);
 
 			slimes.add(slime);
-			this.physics.add.collider(slime, worldLayer);
 			this.gameObjects.push(slime);
 		}
 		this.physics.add.collider(player, slimes);
@@ -93,14 +138,20 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
+
+		collidesLayers.forEach(layerID => {
+			layers[layerID].setCollisionBetween(1, 500);
+			this.physics.add.collider(player, layers[layerID]);
+			this.physics.add.collider(slimes, layers[layerID]);
+		});
 	}
 
 	/*
-    Хотя метод update у спрайтов встроен в Phaser и в v2 вызывался автоматически (что логично ожидать),
-    в v3 из-за новых архитектурных решений это изменилось https://github.com/photonstorm/phaser/pull/3379.
-    Поэтому нужно обновлять спрайты в сцене самостоятельно.
-    В v4 обещают опять переделать.
-    */
+	Хотя метод update у спрайтов встроен в Phaser и в v2 вызывался автоматически (что логично ожидать),
+	в v3 из-за новых архитектурных решений это изменилось https://github.com/photonstorm/phaser/pull/3379.
+	Поэтому нужно обновлять спрайты в сцене самостоятельно.
+	В v4 обещают опять переделать.
+	*/
 	update() {
 		if (this.gameObjects) {
 			this.gameObjects.forEach(function (element) {
