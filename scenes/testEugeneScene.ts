@@ -13,7 +13,7 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
-import Corrol from '../src/characters/corrol';
+import Corral from '../src/characters/corral';
 import Player from '../src/characters/player';
 import Slime from '../src/characters/slime';
 
@@ -107,8 +107,8 @@ class StartingScene extends Phaser.Scene implements Scene {
 		}
 		this.physics.add.collider(player, slimes);
 
-		const corrol = characterFactory.buildCorrol(150,450,100,150);
-        this.gameObjects.push(corrol);
+		const corral = characterFactory.buildCorral(150,450,100,150,3);
+        this.gameObjects.push(corral);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

@@ -1,6 +1,6 @@
 import Slime from './slime';
 import Player from './player';
-import Corrol from './corrol';
+import Corral from './corral';
 import cyberpunkConfigJson from '../../assets/animations/cyberpunk.json';
 import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
@@ -99,16 +99,17 @@ export default class CharacterFactory {
 		throw new Error(`Unknown slime with number ${n}`);
 	}
 
-	buildCorrol(
+	buildCorral(
 		x: number,
 		y: number, 
 		width: number, 
-		height: number
+		height: number,
+		fenceSize: number,
 	) {
 		const animationSets = this.animationLibrary['aurora'];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for corrol`);
-		const character = new Corrol(
+		const character = new Corral(
 			this.scene,
 			x,
 			y,
@@ -116,6 +117,7 @@ export default class CharacterFactory {
 			4,
 			width,
 			height,
+			fenceSize,
 			animationSets
 		);
 		return character;
