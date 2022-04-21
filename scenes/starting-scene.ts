@@ -7,6 +7,7 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
+import { RawPortal } from '../src/ai/scouting_map/cells';
 
 export class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -118,5 +119,11 @@ export class StartingScene extends Phaser.Scene implements Scene {
 			Math.floor(pixels.x / this.tileSize),
 			Math.floor(pixels.y / this.tileSize)
 		);
+	}
+
+	// TODO: Доставать настоящие координаты порталов.
+	// Обрати внимание, что они должны содердать координаты ячеек, а не тайлов
+	getPortal(tile: { x: number; y: number }): RawPortal | null {
+		return null;
 	}
 }
