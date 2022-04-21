@@ -7,29 +7,30 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
+import { RawPortal } from '../src/ai/scouting_map/cells';
 
-type LayerDesctiption = {
+type LayerDescription = {
 	depth?: number;
 	collide?: boolean;
 };
 
 const layersSettings = {
 	/** Нижний слой с землёй и декором */
-	Ground: {} as LayerDesctiption,
+	Ground: {} as LayerDescription,
 	/** Стены, вода */
-	Walls: { collide: true } as LayerDesctiption,
+	Walls: { collide: true } as LayerDescription,
 	/** Одиночные препятствия (камни, пни) */
-	Obstacles: { collide: true } as LayerDesctiption,
+	Obstacles: { collide: true } as LayerDescription,
 	/** Стены загона  - возможно, отдельный слой не нужен */
-	'Corral.Walls': { collide: true } as LayerDesctiption,
+	'Corral.Walls': { collide: true } as LayerDescription,
 	/** Двери загона  - возможно, отдельный слой не нужен */
-	'Corral.Doors': {} as LayerDesctiption,
+	'Corral.Doors': {} as LayerDescription,
 	/** Арбитр в загоне - возможно, отдельный слой не нужен */
-	'Corral.Arbitrator': { depth: 10 } as LayerDesctiption,
+	'Corral.Arbitrator': { depth: 10 } as LayerDescription,
 	/** Арбитр снаружи - возможно, отдельный слой не нужен */
-	Arbitrator: { depth: 10 } as LayerDesctiption,
+	Arbitrator: { depth: 10 } as LayerDescription,
 	/** Декор сверху (кроны деревьев) */
-	Transparent: { depth: 10 } as LayerDesctiption,
+	Transparent: { depth: 10 } as LayerDescription,
 };
 
 /**
@@ -39,7 +40,7 @@ const layersSettings = {
 function createLayers<T extends string>(
 	map: Phaser.Tilemaps.Tilemap,
 	tileset: Phaser.Tilemaps.Tileset,
-	layersSettings: Record<T, LayerDesctiption>
+	layersSettings: Record<T, LayerDescription>
 ): Record<T, Phaser.Tilemaps.TilemapLayer> {
 	const layers = {} as Record<T, Phaser.Tilemaps.TilemapLayer>;
 	for (const layerID in layersSettings) {
@@ -79,6 +80,10 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		super({ key: 'MapDemo' });
 	}
 
+	getPortal(tile: { x: number; y: number }): RawPortal | null {
+		return null;
+	}
+
 	preload() {
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', tilemapJson);
@@ -90,7 +95,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		const tileset = map.addTilesetImage('Green_Meadow_Tileset', 'tiles');
 
 		const layers = createLayers(map, tileset, layersSettings);
-		const collidesLayers = Object.entries<LayerDesctiption>(layersSettings)
+		const collidesLayers = Object.entries<LayerDescription>(layersSettings)
 			.filter(([, { collide: astar }]) => astar)
 			.map(([key]) => key as keyof typeof layersSettings);
 		setupFinder(this.finder, map, collidesLayers);
