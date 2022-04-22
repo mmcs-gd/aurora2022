@@ -19,6 +19,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+
+		const camera = scene.cameras.main;
+		camera.zoom = 1.5; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
+		camera.useBounds = true;
+		camera.setBounds(0, 0, 3000, 3000);
+		camera.startFollow(this);
+
 		this.pickJelly();
 	}
 
