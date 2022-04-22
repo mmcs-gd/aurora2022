@@ -13,19 +13,14 @@ export class GoInPoint extends Steering {
 	}
 
 	calculateImpulse() {
-		console.log("Бегу");
 		
-		//const target = this.objects[0].body.position;
 		const target = this.objects[0];
-		//console.log("x:"+ this.owner.body.position.x+"y:" +this.owner.body.position.y);
+		
 		const toTarget = new Vector2(
-			//this.owner.body.position.x - target.x,
-			//this.owner.body.position.y - target.y
+			
 			this.owner.x - target.x,
 			this.owner.y - target.y
-			// для стринга убегать
-			//target.x-this.owner.x,
-			//target.y-this.owner.y
+			
 		);
 
 

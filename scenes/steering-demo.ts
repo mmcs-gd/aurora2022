@@ -70,32 +70,85 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		 this.physics.add.collider(player1, worldLayer);
 		//Creating characters
 		const player = characterFactory.buildTestCharacter('punk', 100, 100);
-		player.setBodySize(40,50,true);
+		player.setBodySize(40,30,true);
 		player.setCollideWorldBounds(true);
 		this.playerPrefab=player1;
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, player1);
+		//this.physics.add.collider(player, worldLayer);
+		//this.physics.add.collider(player, worldLayer, this.avoidObstacles(player,worldLayer));
 		this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
+			
+			
 			const obstacleBody = worldLayer as Phaser.Physics.Arcade.Sprite;
 			
 			const playerChar = player as Phaser.Physics.Arcade.Sprite;
-
-			const ahead = playerChar.body.velocity.scale(this.tileSize*2);
-			const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
-
-			const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
-			playerChar.body.velocity.add(avoidenceForce);
 			
+			if(playerChar.body.y<100)
+			{
+				const ahead = playerChar.body.velocity.scale(this.tileSize);
+				const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+				const avoidenceForce = obstacleCenter.subtract(ahead).normalize().scale(this.tileSize);
+				const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+				playerChar.body.velocity.add(avoidenceForceNorm).normalize().scale(this.tileSize);
+				playerChar.body.velocity.normalize().scale(this.tileSize);
+			}
+			else
+			{
+				const ahead = playerChar.body.velocity.scale(this.tileSize);
+				const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+				const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
+				const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+				playerChar.body.velocity.add(avoidenceForceNorm);
+			}
+			
+			
+			//const playerBody= player as Phaser.Physics.Arcade.Body;
+			//if(playerBody.blocked.up){
+				//if(playerBody.onCeiling()||playerBody.onFloor())
+			//	{
+			//		playerBody.checkCollision.right=false;
+			//		playerBody.checkCollision.left=false;
+			//	}
+			
+		//	}
+			//playerChar.body.checkCollision()
+		
+
+		/*	const ahead = playerChar.body.velocity.scale(this.tileSize);
+		const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+		const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
+		const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+		playerChar.body.velocity.add(avoidenceForceNorm);
+			
+			playerBody.checkCollision.right=true;
+			playerBody.checkCollision.left=true;*/
+			 
+
+				// console.log("стена сверху",obstacleBody.body.position.y);
+			 
+			// const ahead = playerChar.body.velocity.scale(this.tileSize);
+			// const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+			//  const ahead = playerChar.body.velocity.scale(this.tileSize);
+			//  const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+			// // const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
+			// const avoidenceForce = obstacleCenter.subtract(ahead).normalize().scale(this.tileSize);
+			//  const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+			//  console.log("x avoidenceForce: "+avoidenceForceNorm.x+" y avoidenceForce: "+avoidenceForceNorm.y);
+			//  playerChar.body.velocity.add(avoidenceForceNorm).normalize().scale(this.tileSize);
+			//  playerChar.body.velocity.normalize().scale(this.tileSize);
+			 //playerChar.body.velocity.add(avoidenceForceNorm);
+			 //console.log("x: "+playerChar.body.velocity.x+" y: "+playerChar.body.velocity.y);
 		});
 
 		//Adding Steering
 		//player.addSteering(new Wander(player, this.gameObjects, 1));
-		// const massiv: Phaser.Physics.Arcade.Sprite[] = [];
-			// if (player1 != null) massiv.push(player1);
-		// player.addSteering(new GoInPoint(player, massiv, 1));
-		const massiv: Phaser.Physics.Arcade.Sprite[] = [];
-			if (player1 != null) massiv.push(player1);
-		player.addSteering(new Escape(player, massiv, 1,500));
+		 const massiv: Phaser.Physics.Arcade.Sprite[] = [];// 2 параметр конструктора стирингов это массив спрайтов, но убегать и идти он может лишь к 1 элементу ну или 0 в массиве
+			  if (player1 != null) massiv.push(player1);
+		player.addSteering(new GoInPoint(player, massiv, 1));
+		//  const massiv: Phaser.Physics.Arcade.Sprite[] = [];
+			//  if (player1 != null) massiv.push(player1);
+		//  player.addSteering(new Escape(player, massiv, 1));
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
@@ -108,10 +161,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		if (this.gameObjects) {
 			this.gameObjects.forEach(function (element) {
 				element.update();
-				if(element instanceof DemoNPC)
-				{
-					//console.log("DemoNPC");
-				}
 			});
 
 
@@ -135,4 +184,29 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
 	  }
+
+	 avoidObstacles (player:object, worldLayer:object)
+	 {
+		const obstacleBody = worldLayer as Phaser.Physics.Arcade.Sprite;
+			
+		const playerChar = player as Phaser.Physics.Arcade.Sprite;
+		
+		if(playerChar.body.y<100)
+		{
+			const ahead = playerChar.body.velocity.scale(this.tileSize);
+			const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+			const avoidenceForce = obstacleCenter.subtract(ahead).normalize().scale(this.tileSize);
+			const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+			playerChar.body.velocity.add(avoidenceForceNorm).normalize().scale(this.tileSize);
+			playerChar.body.velocity.normalize().scale(this.tileSize);
+		}
+		else
+		{
+			const ahead = playerChar.body.velocity.scale(this.tileSize);
+			const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
+			const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
+			const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
+			playerChar.body.velocity.add(avoidenceForceNorm);
+		}
+	 }
 }

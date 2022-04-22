@@ -69,7 +69,7 @@ export default class CharacterFactory {
 		x: number,
 		y: number
 	) {
-		const maxSpeed = 75;
+		const maxSpeed = 50;
 		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary['punk'];
 		if (animationSets === undefined)
