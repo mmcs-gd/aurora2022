@@ -1,4 +1,6 @@
 
+import Vector from "../utils/vector";
+import { Scene } from "phaser";
 import Slime from "./slime";
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
@@ -48,12 +50,12 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			body.setVelocityY(speed);
 		}
 
-		this.jellyInHands?.body.position.set(this.body.position.x, this.body.position.y+3);
+		this.jellyInHands?.body.position.set(this.body.position.x, this.body.position.y + 3);
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateListNearestObjects();
 		this.updateAnimation();
-		
+
 	}
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
@@ -80,40 +82,53 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	//First element in list - Aurora.
 	private updateListNearestObjects() {
 		this.nearestObject = [];
-		const middleSpriteX = 15;
-		const middleSpriteY = 15;
-		const middleSpriteYJelly = 16;
+		const radius = 60;
+		const spriteOffset = Vector.create(15, 15);
+		const jellySpriteOffset = Vector.create(15, 16);
+		const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
+		const _scene = this.scene as Scene;
+		if (_scene instanceof Scene == false)
+			return;
+
 		this.scene.children.list.forEach(element => {
-			// (element.body as Phaser.Physics.Arcade.Body).
-			if (element.body != null){
-				if ((element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) * (element.body.position.x+middleSpriteX - (this.x+middleSpriteX)) +
-					(element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) * (element.body.position.y+middleSpriteYJelly - (this.y+middleSpriteY)) <= 60*60
-					&& Math.round(this.x+15!) != Math.round(element.body.position.x) 
-					&& Math.round(this.y+15) != Math.round(element.body.position.y)) {
-						if (this != element)
-							this.nearestObject.push(element);
-				}
-			}
+			if (this == element)
+				return;
+			if (element.body == null)
+				return;
+			const position = Vector.create(element.body.position.x, element.body.position.y)
+			const distanceSqr =
+				Math.pow(position.x + jellySpriteOffset.x - playerPosition.x, 2) +
+				Math.pow(position.y + jellySpriteOffset.y - playerPosition.y, 2);
+			const inRadius = distanceSqr <= radius * radius;
+			if (inRadius == false)
+				return;
+
+			this.nearestObject.push(element);
 		});
 	}
-	// Взять желешку работает, но нужно дописать метод следования за Авророй (перед ней). 
+
 	pickJelly() {
 		this.scene.input.keyboard.on('keydown-Q', () => {
-			if (this.jellyInHands != undefined){
+			if (this.jellyInHands != undefined) {
 				this.jellyInHands.activeJelly = true;
 				this.jellyInHands = undefined;
-			}else{
-				if (this.nearestObject.length != 0){
-					this.nearestObject.forEach(element => {
-						if (element instanceof  Slime) {
-							const nearSlime = element as Slime;
-							nearSlime.activeJelly = false;
-							this.jellyInHands = nearSlime;
-							return;
-						}
-					});
-				}
-			}	
+				return;
+			}
+
+			if (this.nearestObject.length == 0)
+				return;
+
+			for (let i = 0; i < this.nearestObject.length; i++) {
+				const element = this.nearestObject[i];
+				if (element instanceof Slime == false)
+					continue;
+
+				const nearSlime = element as Slime;
+				nearSlime.activeJelly = false;
+				this.jellyInHands = nearSlime;
+				break;
+			}
+
 		});
 	}
 }

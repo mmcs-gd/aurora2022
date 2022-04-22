@@ -20,36 +20,16 @@ export default class Corral extends Phaser.Physics.Arcade.Sprite {
 		scene.physics.world.enable(this, Phaser.Physics.Arcade.STATIC_BODY);
 		scene.add.existing(this);
 		this.body.setSize(width, height);
-		const slimesOverlap = scene.physics.add.overlap(this, scene.slimesGroup, (o1, o2) => {
-			const slime = o2 as Slime; // todo check type
+		const slimesOverlap = this.scene.physics.add.overlap(this, scene.slimesGroup, (o1, o2) => {
+			const slime = o2 as Slime;
 			slime.activeJelly = false
 			slimesOverlap.active = false
 		});
-		this.createWalls(fenceSize);
-		// slimesOverlap
-	}
-
-	createWalls(fenceSize: number) {
-		this.createLeftWall();
-		this.createRighttWall();
-		this.createUpWall();
-		this.createDownWall(fenceSize);
-		this.createFence(fenceSize);
-	}
-
-	private createLeftWall() {
-
-	}
-	private createRighttWall() {
 		
 	}
-	private createUpWall() {
-		
-	}
-	private createDownWall(fenceSize: number) {
-		
-	}
-	private createFence(fenceSize: number){
 
+	update() {
+		
 	}
+
 }
