@@ -6,6 +6,7 @@ import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
 import Portal from './portal';
+import Seed from './seed'
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -18,6 +19,7 @@ const cyberSpritesheets = [
 	'green',
 	'punk',
 	'portal',
+	'seed'
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
@@ -105,6 +107,23 @@ export default class CharacterFactory {
 		portal.setCollideWorldBounds(true);
 		return portal;
 	}
+
+	buildSeed(x: number, y: number) {
+		const timeToClose = 300;
+		const seed = new Seed(
+			this.scene,
+			x,
+			y,
+			'seed',
+			-1,
+			timeToClose,
+			[],
+		);
+		seed.setCollideWorldBounds(true);
+		return seed;
+	}
+
+
 
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
 		const speed = 40;

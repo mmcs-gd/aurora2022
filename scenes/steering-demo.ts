@@ -63,9 +63,15 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.physics.add.collider(player, worldLayer);
 
 		// add Portal
-		const protal = characterFactory.buildPortal(50, 50);
-		this.gameObjects.push(protal);
-		this.physics.add.collider(protal, worldLayer);
+		const portal = characterFactory.buildPortal(50, 50, 5);
+		this.gameObjects.push(portal);
+		this.physics.add.collider(portal, worldLayer);
+
+
+		// add Seed
+		const seed = characterFactory.buildSeed(150, 50);
+		this.gameObjects.push(seed);
+		this.physics.add.collider(seed, worldLayer);
 
 		//Adding Steering
 		player.addSteering(new Wander(player, this.gameObjects, 1));
