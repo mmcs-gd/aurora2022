@@ -31,6 +31,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	pointOfInterest?: Vector2;
 	nextLocation?: Vector2;
 	wantToJump = false;
+	inPortal = false;
 	path: { x: number; y: number }[] = [];
 	update() {
 		if (this.hasArrived()) {
