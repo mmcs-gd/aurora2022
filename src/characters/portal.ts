@@ -31,6 +31,9 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	destroyPortalWithoutSlime() {
+		this.slimes.forEach(element => {
+			element.taskStart();
+		});
 		this.destroy();
 	}
 
