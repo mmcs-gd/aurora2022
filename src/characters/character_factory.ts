@@ -5,6 +5,7 @@ import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
+import Portal from './portal';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -16,6 +17,7 @@ const cyberSpritesheets = [
 	'yellow',
 	'green',
 	'punk',
+	'portal',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
@@ -86,6 +88,13 @@ export default class CharacterFactory {
 		);
 		character.setCollideWorldBounds(true);
 		return character;
+	}
+
+	buildPortal(x: number, y: number) {
+		const timeToClose = 400;
+		const portal = new Portal(this.scene, x, y, 'portal', -1, timeToClose, []);
+		portal.setCollideWorldBounds(true);
+		return portal;
 	}
 
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
