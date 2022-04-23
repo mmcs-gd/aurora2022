@@ -25,7 +25,6 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 		this.steerings.push(steering);
 	}
 
-	
 	update() {
 		const body = this.body as Phaser.Physics.Arcade.Body;
 		let imp;
@@ -34,9 +33,9 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 			//console.log(" imp x : "+ imp.x+"imp y:"+ imp.y);
 			body.velocity.x += imp.x * st.force;
 			body.velocity.y += imp.y * st.force;
-			
+
 			body.velocity.normalize().scale(this.maxSpeed);
-			console.log(" imp x : "+ body.velocity.x+"imp y:"+ body.velocity.y);
+			console.log(' imp x : ' + body.velocity.x + 'imp y:' + body.velocity.y);
 			//console.log(" imp x : "+ body.velocity.x+"imp y:"+ body.velocity.y);
 		});
 

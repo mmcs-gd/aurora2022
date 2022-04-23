@@ -6,8 +6,8 @@ import Sprite = Phaser.Physics.Arcade.Sprite;
 export class Wander implements Steering {
 	constructor(
 		private owner: Sprite,
-		private objects: {x: number, y: number},
-		public	force: number
+		private objects: { x: number; y: number },
+		public force: number
 	) {}
 
 	wanderDistance = 7; //желание сохранить траекторию
