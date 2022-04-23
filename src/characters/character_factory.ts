@@ -19,8 +19,8 @@ const cyberSpritesheets = [
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
-type HumanSpriteSheetName = typeof cyberSpritesheets[number];
-type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
+export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
+export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
 	constructor(public scene: Scene) {
@@ -71,7 +71,7 @@ export default class CharacterFactory {
 	) {
 		const maxSpeed = 50;
 		const cursors = this.scene.input.keyboard.createCursorKeys();
-		const animationSets = this.animationLibrary['punk'];
+		const animationSets = this.animationLibrary[spriteSheetName];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for test`);
 		const character = new DemoNPC(

@@ -12,7 +12,6 @@ export class Escape implements Steering {
 
 	calculateImpulse() {
 		const target = this.objects;
-		const owner = this.owner.body;
 
 		const toTarget = new Vector2(
 			target.x - this.owner.x,
@@ -23,6 +22,6 @@ export class Escape implements Steering {
 		const x = Math.abs(toTarget.x) < 1 ? 0 : -Math.sign(toTarget.x);
 		const y = Math.abs(toTarget.y) < 1 ? 0 : -Math.sign(toTarget.y);
 
-		return new Vector2(x, y);
+		return new Vector2(x, y).normalize();
 	}
 }
