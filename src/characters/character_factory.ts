@@ -90,9 +90,18 @@ export default class CharacterFactory {
 		return character;
 	}
 
-	buildPortal(x: number, y: number) {
+	buildPortal(x: number, y: number, maxSlime: number) {
 		const timeToClose = 400;
-		const portal = new Portal(this.scene, x, y, 'portal', -1, timeToClose, []);
+		const portal = new Portal(
+			this.scene,
+			x,
+			y,
+			'portal',
+			-1,
+			timeToClose,
+			maxSlime,
+			[]
+		);
 		portal.setCollideWorldBounds(true);
 		return portal;
 	}

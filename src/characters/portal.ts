@@ -24,7 +24,6 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 	addSlime(input: Slime) {
 		if (this.currentSlime < this.maxSlime) {
 			this.slimes.push(input);
-			input.inPortal = true;
 			this.currentSlime += 1;
 			return true;
 		}
@@ -32,9 +31,6 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	destroyPortalWithoutSlime() {
-		this.slimes.forEach(element => {
-			element.inPortal = false;
-		});
 		this.destroy();
 	}
 
