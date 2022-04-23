@@ -30,17 +30,10 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 		let imp;
 		this.steerings.forEach(st => {
 			imp = st.calculateImpulse();
-			//console.log(" imp x : "+ imp.x+"imp y:"+ imp.y);
 			body.velocity.x += imp.x * st.force;
 			body.velocity.y += imp.y * st.force;
-
 			body.velocity.normalize().scale(this.maxSpeed);
-			console.log(' imp x : ' + body.velocity.x + 'imp y:' + body.velocity.y);
-			//console.log(" imp x : "+ body.velocity.x+"imp y:"+ body.velocity.y);
 		});
-
-		// body.velocity.normalize().scale(this.maxSpeed);
-		// console.log(" imp x : "+ body.velocity.x+"imp y:"+ body.velocity.y);
 
 		//ограничиваем частоту обновления анимаций
 		if (Date.now() - this.last > 600) {

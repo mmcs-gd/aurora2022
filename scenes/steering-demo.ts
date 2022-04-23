@@ -75,7 +75,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.playerPrefab=player1;
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, player1);
-		//this.physics.add.collider(player, worldLayer);
 		//this.physics.add.collider(player, worldLayer, this.avoidObstacles(player,worldLayer));
 		this.physics.add.collider(player, worldLayer, (player:object, worldLayer:object)=>{
 			
@@ -103,16 +102,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			}
 			
 			
-			//const playerBody= player as Phaser.Physics.Arcade.Body;
-			//if(playerBody.blocked.up){
-				//if(playerBody.onCeiling()||playerBody.onFloor())
-			//	{
-			//		playerBody.checkCollision.right=false;
-			//		playerBody.checkCollision.left=false;
-			//	}
 			
-		//	}
-			//playerChar.body.checkCollision()
 		
 
 		/*	const ahead = playerChar.body.velocity.scale(this.tileSize);
@@ -120,25 +110,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
 		const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
 		playerChar.body.velocity.add(avoidenceForceNorm);
-			
-			playerBody.checkCollision.right=true;
-			playerBody.checkCollision.left=true;*/
-			 
-
-				// console.log("стена сверху",obstacleBody.body.position.y);
-			 
-			// const ahead = playerChar.body.velocity.scale(this.tileSize);
-			// const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
-			//  const ahead = playerChar.body.velocity.scale(this.tileSize);
-			//  const obstacleCenter = new Vector2(obstacleBody.x*this.tileSize, obstacleBody.y*this.tileSize);
-			// // const avoidenceForce = ahead.subtract(obstacleCenter).scale(this.tileSize);
-			// const avoidenceForce = obstacleCenter.subtract(ahead).normalize().scale(this.tileSize);
-			//  const avoidenceForceNorm=avoidenceForce.normalize().scale(this.tileSize);
-			//  console.log("x avoidenceForce: "+avoidenceForceNorm.x+" y avoidenceForce: "+avoidenceForceNorm.y);
-			//  playerChar.body.velocity.add(avoidenceForceNorm).normalize().scale(this.tileSize);
-			//  playerChar.body.velocity.normalize().scale(this.tileSize);
-			 //playerChar.body.velocity.add(avoidenceForceNorm);
-			 //console.log("x: "+playerChar.body.velocity.x+" y: "+playerChar.body.velocity.y);
+		*/	
 		});
 
 		//Adding Steering
