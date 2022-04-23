@@ -5,8 +5,8 @@
 	"scripts": {
 		"start": "parcel index.html",
 		"build": "parcel build index.html --public-url ./",
-		"format": "prettier --check src",
-		"format:fix": "prettier --write src",
+		"format": "prettier --check .",
+		"format:fix": "prettier --write .",
 		"lint": "eslint . --ext .ts",
 		"lint:fix": "npm run lint --fix",
 		"fix": "npm run format:fix && npm run lint:fix"
