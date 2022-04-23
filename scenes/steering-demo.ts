@@ -143,12 +143,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 
 		//Adding Steering
 		//player.addSteering(new Wander(player, this.gameObjects, 1));
-		 const massiv: Phaser.Physics.Arcade.Sprite[] = [];// 2 параметр конструктора стирингов это массив спрайтов, но убегать и идти он может лишь к 1 элементу ну или 0 в массиве
-			  if (player1 != null) massiv.push(player1);
-		player.addSteering(new GoInPoint(player, massiv, 1));
-		//  const massiv: Phaser.Physics.Arcade.Sprite[] = [];
-			//  if (player1 != null) massiv.push(player1);
-		//  player.addSteering(new Escape(player, massiv, 1));
+		//player.addSteering(new GoInPoint(player, player1, 1));
+		player.addSteering(new Escape(player, player1, 1));
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
@@ -162,8 +158,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			this.gameObjects.forEach(function (element) {
 				element.update();
 			});
-
-
 		}
 	}
 

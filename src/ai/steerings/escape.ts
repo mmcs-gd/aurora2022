@@ -3,22 +3,18 @@ import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
-export class Escape extends Steering {
+export class Escape implements Steering {
 	constructor(
-		owner: Sprite,
-		objects: Sprite[],
-		force: number
-	) {
-		super(owner, objects, force);
-	}
+	private	owner: Sprite,
+	private	objects: {x: number, y: number},
+	public	force: number
+	){}
 
 	calculateImpulse() {
 		
-		const target = this.objects[0];
+		const target = this.objects;
         const owner=this.owner.body;
-		const targetPos = this.objects[0].body.position;
-        const ownerPos= this.owner.body.position;
-        const dist=targetPos.distance(ownerPos);
+
             const toTarget = new Vector2(
                 target.x-this.owner.x,
                 target.y-this.owner.y

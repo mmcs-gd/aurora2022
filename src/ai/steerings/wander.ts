@@ -3,10 +3,12 @@ import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
-export class Wander extends Steering {
-	constructor(owner: Sprite, objects: Sprite[], force: number) {
-		super(owner, objects, force);
-	}
+export class Wander implements Steering {
+	constructor(
+		private owner: Sprite,
+		private objects: {x: number, y: number},
+		public	force: number
+	) {}
 
 	wanderDistance = 7; //желание сохранить траекторию
 	wanderRadius = 11; //желание повернуть...

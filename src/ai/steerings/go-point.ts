@@ -3,18 +3,16 @@ import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
-export class GoInPoint extends Steering {
+export class GoInPoint implements Steering {
 	constructor(
-		owner: Sprite,
-		objects: Sprite[],
-		force: number
-	) {
-		super(owner, objects, force);
-	}
+		private owner: Sprite,
+		private objects: {x: number, y: number},
+		public	force: number
+	) {}
 
 	calculateImpulse() {
 		
-		const target = this.objects[0];
+		const target = this.objects;
 		
 		const toTarget = new Vector2(
 			
