@@ -25,7 +25,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const camera = scene.cameras.main;
 		camera.zoom = 1.5; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
 		camera.useBounds = true;
-		camera.setBounds(0, 0, 3000, 3000);
+		camera.setBounds(0, 0, 765, 550);
 		camera.startFollow(this);
 
 		this.pickJelly();
@@ -110,7 +110,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	pickJelly() {
 		this.scene.input.keyboard.on('keydown-Q', () => {
 			if (this.jellyInHands != undefined) {
-				this.jellyInHands.activeJelly = true;
+				this.jellyInHands.setActive(true);
 				this.jellyInHands = undefined;
 				return;
 			}
@@ -124,11 +124,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 					continue;
 
 				const nearSlime = element as Slime;
-				nearSlime.activeJelly = false;
 				this.jellyInHands = nearSlime;
+				this.jellyInHands.setActive(false);
 				break;
 			}
 
 		});
+	}
+
+	controlCorral() {
+
 	}
 }

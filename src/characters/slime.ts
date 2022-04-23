@@ -25,7 +25,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	path: { x: number; y: number }[] = [];
 	update() {
 		if (this.activeJelly == true) //Flag active for pick jelly./Флаг для остановки Желешек на руках Авроры, чтоб они не ходили.
-		{ 
+		{
 			if (this.hasArrived()) {
 				this.pointOfInterest = new Vector2(
 					Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
@@ -57,7 +57,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 					this.scene.finder.calculate();
 				}
 			}
-		
+
 			if (this.nextLocation) {
 				const body = this.body as Phaser.Physics.Arcade.Body;
 				const position = body.position;
