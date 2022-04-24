@@ -7,6 +7,7 @@ import CharacterFactory from '../src/characters/character_factory';
 import Steering from '../src/ai/steerings/steering';
 import { Wander } from '../src/ai/steerings/wander';
 import Vector2 = Phaser.Math.Vector2;
+import { RawPortal } from '../src/ai/scouting_map/cells';
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -107,5 +108,9 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			Math.floor(pixels.x / this.tileSize),
 			Math.floor(pixels.y / this.tileSize)
 		);
+	}
+
+	getPortal(tile: { x: number; y: number }): RawPortal | null {
+		return null;
 	}
 }
