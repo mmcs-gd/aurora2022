@@ -2,6 +2,7 @@ import Phaser, { Physics } from 'phaser';
 import EasyStar from 'easystarjs';
 import Player from './player';
 import Slime from './slime';
+import { RawPortal } from '../ai/scouting_map/cells';
 
 /*
     Интерфейс сцены
@@ -14,7 +15,8 @@ export interface Scene extends Phaser.Scene {
     readonly slimes: Slime[];
     readonly slimesGroup: Physics.Arcade.Group;
 	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
-	pixelsToTiles(tile: { x: number; y: number }): Phaser.Math.Vector2;
+	pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
+	getPortal(tile: { x: number; y: number }): RawPortal | null;
 }
 
 /*

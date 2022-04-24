@@ -6,6 +6,7 @@ import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import Fence from './fence';
+import DemoNPC from './demo-npc';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -20,8 +21,8 @@ const cyberSpritesheets = [
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
-type HumanSpriteSheetName = typeof cyberSpritesheets[number];
-type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
+export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
+export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
 	constructor(public scene: Scene) {
@@ -65,6 +66,30 @@ export default class CharacterFactory {
 		return character;
 	}
 
+	buildTestCharacter(
+		spriteSheetName: HumanSpriteSheetName,
+		x: number,
+		y: number
+	) {
+		const maxSpeed = 50;
+		const cursors = this.scene.input.keyboard.createCursorKeys();
+		const animationSets = this.animationLibrary[spriteSheetName];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for test`);
+		const character = new DemoNPC(
+			this.scene,
+			x,
+			y,
+			spriteSheetName,
+			2,
+			maxSpeed,
+			cursors,
+			animationSets
+		);
+		character.setCollideWorldBounds(true);
+		return character;
+	}
+
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
 		const speed = 40;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -78,7 +103,8 @@ export default class CharacterFactory {
 			slimeSpriteSheet,
 			9 * slimeType,
 			speed,
-			animations
+			animations,
+			2
 		);
 		slime.setCollideWorldBounds(true);
 		return slime;

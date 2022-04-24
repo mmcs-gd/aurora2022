@@ -1,22 +1,20 @@
-import Steering from './steering.js';
+import Steering from './steering';
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
-export class Pursuit extends Steering {
+export class Pursuit implements Steering {
 	constructor(
-		owner: Sprite,
-		objects: Sprite[],
-		force: number,
+		private owner: Sprite,
+		private target: Sprite,
+		public force: number,
 		readonly ownerSpeed: number,
 		readonly targetSpeed: number
-	) {
-		super(owner, objects, force);
-	}
+	) {}
 
 	calculateImpulse() {
 		const searcherDirection = this.owner.body.velocity;
-		const target = this.objects[0];
+		const target = this.target;
 		const targetDirection = target.body.velocity;
 		const toTarget = new Vector2(
 			this.owner.x - target.x,

@@ -1,20 +1,21 @@
 import Phaser from 'phaser';
-
-import testEugeneScene from '../scenes/testEugeneScene';
-
-const config = {
+import scenes from '../scenes';
+const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
-	width: 800,
-	height: 600,
 	pixelArt: true,
-	zoom: 1.2,
-	scene: testEugeneScene,
+	scene: scenes,
+	scale: {
+		mode: Phaser.Scale.FIT,
+		expandParent: true,
+		width: '83%',
+		height: '83%',
+		zoom: 1.2,
+	},
 	physics: {
 		default: 'arcade',
 		arcade: {
 			gravity: {
 				y: 0,
-				debug: true, // set to true to view zones
 			},
 		},
 	},
