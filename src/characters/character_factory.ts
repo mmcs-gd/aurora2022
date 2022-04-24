@@ -8,9 +8,9 @@ import DemoNPC from './demo-npc';
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import Physics = Phaser.Physics.Arcade.ArcadePhysics;
 import WorldLayer = Phaser.Tilemaps.TilemapLayer;
-import Punk from "./punk";
-import Portal from "./portal";
-import Seed from "./seed";
+import Punk from './punk';
+import Portal from './portal';
+import Seed from './seed';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -72,7 +72,6 @@ export default class CharacterFactory {
 		return character;
 	}
 
-
 	buildPunkCharacter(
 		spriteSheetName: HumanSpriteSheetName,
 		x: number,
@@ -81,7 +80,7 @@ export default class CharacterFactory {
 		physics: Physics,
 		worldLayer: WorldLayer,
 		gate: Sprite,
-		player: Sprite,
+		player: Sprite
 	) {
 		const maxSpeed = 100;
 		const cursors = this.scene.input.keyboard.createCursorKeys();
@@ -107,8 +106,6 @@ export default class CharacterFactory {
 		character.setCollideWorldBounds(true);
 		return character;
 	}
-
-
 
 	buildPortal(x: number, y: number, maxSlime: number) {
 		const timeToClose = 400;
@@ -151,8 +148,6 @@ export default class CharacterFactory {
 		seed.setCollideWorldBounds(true);
 		return seed;
 	}
-
-
 
 	buildTestCharacter(
 		spriteSheetName: HumanSpriteSheetName,

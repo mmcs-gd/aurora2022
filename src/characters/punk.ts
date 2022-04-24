@@ -5,8 +5,8 @@ import CharacterFactory from './character_factory';
 import Physics = Phaser.Physics.Arcade.ArcadePhysics;
 import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import { Wander } from '../ai/steerings/wander';
-import {GoInPoint} from "../ai/steerings/go-point";
-import {Escape} from "../ai/steerings/escape";
+import { GoInPoint } from '../ai/steerings/go-point';
+import { Escape } from '../ai/steerings/escape';
 
 export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	constructor(
@@ -22,8 +22,8 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		private characterFactory: CharacterFactory,
 		private physics: Physics,
 		private worldLayer: WorldLayer,
-		private gate: Sprite,// class Gate
-		private player: Sprite, // class Aurora
+		private gate: Sprite, // class Gate
+		private player: Sprite // class Aurora
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -31,23 +31,135 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		this.setVelocity(1);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 	// @ts-ignore
 	protected steerings: Steering[] = [
 		new Wander(this, 1),
 		new GoInPoint(this, this.gate, 1),
-		new Escape(this, this.player, 1)
+		new Escape(this, this.player, 1),
+		new Escape(this, this.gate, 1),
 	];
 	protected last = Date.now();
 
-	update() {
+	timeToCreateSeed = 500;
+	radiusDetectionGate = 300;
+
+	radiusOpenGate = 80;
+
+	statePank = 0;
+
+	timeNow = 0;
+
+	timeToEscape = 300;
+
+	currentEscapeTime = 0;
+
+	createSeed() {
+		const seed = this.characterFactory.buildSeed(
+			this.x,
+			this.y,
+			this.gameObjects,
+			this.characterFactory,
+			this.physics,
+			this.worldLayer
+		);
+		this.gameObjects.push(seed);
+	}
+
+	wander() {
+		this.useSteering(0);
+		this.timeNow += 1;
+		if (this.timeNow > this.timeToCreateSeed) {
+			this.createSeed();
+			this.timeNow = 0;
+		}
+	}
+
+	useSteering(index: number) {
 		const body = this.body as Phaser.Physics.Arcade.Body;
 
-			const imp = this.steerings[1].calculateImpulse();
-			body.velocity.x += imp.x *  this.steerings[1].force;
-			body.velocity.y += imp.y *  this.steerings[1].force;
-
-
+		const imp = this.steerings[index].calculateImpulse();
+		body.velocity.x += imp.x * this.steerings[index].force;
+		body.velocity.y += imp.y * this.steerings[index].force;
 		body.velocity.normalize().scale(this.maxSpeed);
+	}
+
+	moveToGate() {
+		this.useSteering(1);
+	}
+
+	moveOutGate() {
+		this.useSteering(3);
+	}
+
+	moveOutAurora() {
+		this.useSteering(2);
+	}
+
+	// 0 - блуждание
+	// 1- движение к загону
+	// 2 - побег от загона
+	// 3 - побег от овроры
+	update() {
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+		// @ts-ignore
+		switch (this.statePank) {
+			case 0: {
+				this.wander();
+				console.log('wander');
+				if (
+					Phaser.Math.Distance.Between(
+						this.x,
+						this.y,
+						this.gate.x,
+						this.gate.y
+					) <= this.radiusDetectionGate
+				)
+					this.statePank = 1;
+				break;
+			}
+			case 1: {
+				this.moveToGate();
+				console.log('moveToGate');
+				// if(this.gate.isOpen ){
+				// 	this.statePank=1
+				// }
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
+				if (
+					Phaser.Math.Distance.Between(
+						this.x,
+						this.y,
+						this.gate.x,
+						this.gate.y
+					) <= this.radiusOpenGate
+				) {
+					//this.gate.open()
+					console.log('openGate');
+					this.statePank = 2;
+				}
+				break;
+			}
+			case 2: {
+				this.moveOutGate();
+				if (this.currentEscapeTime > this.timeToEscape) {
+					this.statePank = 0;
+					this.currentEscapeTime = 0;
+				}
+				this.currentEscapeTime += 1;
+				console.log('moveOutGate');
+				break;
+			}
+			case 3: {
+				this.moveOutAurora();
+				if (this.currentEscapeTime > this.timeToEscape) {
+					this.statePank = 0;
+					this.currentEscapeTime = 0;
+				}
+				this.currentEscapeTime += 1;
+				break;
+			}
+		}
 
 		//ограничиваем частоту обновления анимаций
 		if (Date.now() - this.last > 600) {

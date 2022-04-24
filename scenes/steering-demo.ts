@@ -34,8 +34,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
 		this.load.image('seed', SeedPng);
-		this.load.image('portal', PortalPng)
-
+		this.load.image('portal', PortalPng);
 	}
 
 	create() {
@@ -78,9 +77,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
-
-
-
 		//Creating characters
 		const steerings: [
 			color: HumanSpriteSheetName,
@@ -102,8 +98,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		// 	npc.addSteering(steering(npc));
 		// }
 
-
-
 		const punk = characterFactory.buildPunkCharacter(
 			'punk',
 			400,
@@ -119,7 +113,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.gameObjects.push(punk);
 		npcGroup.add(punk);
 
-
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
 		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
@@ -128,17 +121,15 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			avoidObstacles(this.tileSize, player, obstacle);
 		});
 
-
-		const seed = characterFactory.buildSeed(150, 150, this.gameObjects, characterFactory, this.physics, worldLayer);
-		this.gameObjects.push(seed);
-		this.physics.add.collider(seed, worldLayer);
+		// const seed = characterFactory.buildSeed(150, 150, this.gameObjects, characterFactory, this.physics, worldLayer);
+		// this.gameObjects.push(seed);
+		// this.physics.add.collider(seed, worldLayer);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
-
 	}
 
 	update() {
