@@ -12,6 +12,7 @@ import { Wander } from '../src/ai/steerings/wander';
 import { Pursuit } from '../src/ai/steerings/pursuit';
 import { GameObjects } from 'phaser';
 import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
+import { GoInPoint } from '../src/ai/steerings/go-point';
 
 type LayerDescription = {
 	depth?: number;
@@ -104,7 +105,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			.map(([key]) => key as keyof typeof layersSettings);
 		setupFinder(this.finder, map, collidesLayers);
 		// Setup for collisions
-		console.log(collidesLayers);
 
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
@@ -115,7 +115,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Создаем глобального арбитра
 		const arbitrator = new Arbitrator();
 		// Создаем локальных арбитров
-		const outerArbitratorCoords = { x: 496.7504208861624, y: 399.5 };
+		const outerArbitratorCoords = { x: 496.7504208861624, y: 365.5 };
 		const innerArbitratorCoords = { x: 915.5, y: 207.5 };
 
 		const outerArbitrator = new ArbitratorInstance(
@@ -128,7 +128,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			innerArbitratorCoords
 		);
 
-		const outerArbitratorArr = []; // стиринг может принимать только массив спрайтов в качестве цели
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
 		this.gameObjects.push(player);
 		// Создаем желешек
@@ -145,12 +144,16 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			);
 			params.slimeType = Phaser.Math.RND.between(0, 4);
 
-			const slime = characterFactory.buildSlime(x, y, params);
+			const slime = characterFactory.buildSlime(
+				600,
+				350,
+				params,
+				outerArbitrator,
+				innerArbitrator
+			);
 
 			slimes.add(slime);
 			this.gameObjects.push(slime);
-			// пример установки стиринга блуждания
-			slime.addSteering(new Wander(slime, this.gameObjects, 1));
 		}
 		this.physics.add.collider(slimes, slimes);
 		this.physics.add.collider(player, slimes);

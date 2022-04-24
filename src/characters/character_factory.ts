@@ -5,6 +5,7 @@ import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
+import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -88,7 +89,13 @@ export default class CharacterFactory {
 		return character;
 	}
 
-	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
+	buildSlime(
+		x: number,
+		y: number,
+		{ slimeType = 0 }: BuildSlimeOptions,
+		outerArbitrator: ArbitratorInstance,
+		innerArbitrator: ArbitratorInstance
+	) {
 		const speed = 50;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationLibrary[slimeSpriteSheet].get(
@@ -102,7 +109,9 @@ export default class CharacterFactory {
 			9 * slimeType,
 			speed,
 			animations,
-			2
+			2,
+			outerArbitrator,
+			innerArbitrator
 		);
 		slime.setCollideWorldBounds(true);
 		return slime;

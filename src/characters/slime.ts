@@ -5,6 +5,8 @@ import { CellType, RawPortal } from '../ai/scouting_map/cells';
 import { ScoutedMap } from '../ai/scouting_map/map';
 import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 import Steering from '../ai/steerings/steering';
+import { GoInPoint } from '../ai/steerings/go-point';
+import { Wander } from '../ai/steerings/wander';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
@@ -15,9 +17,11 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		y: number,
 		name: string,
 		frame: number,
-		readonly speed: number,
+		public speed: number,
 		readonly animations: string[],
-		private sightDistance: number
+		private sightDistance: number,
+		readonly outerArbitrator: ArbitratorInstance,
+		readonly innerArbitrator: ArbitratorInstance
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -28,6 +32,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 
 	protected steerings: Steering[] = [];
 	protected last = Date.now();
+	protected eps = 40;
 
 	currentTask: SlimeTask;
 	defaultTask(): SlimeTask {
@@ -40,8 +45,47 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		this.steerings.push(steering);
 	}
 
+	goToOuterArbitrator() {
+		this.addSteering(new GoInPoint(this, this.outerArbitrator.location, 2));
+	}
+
+	goToInnerArbitrator() {
+		this.addSteering(new GoInPoint(this, this.innerArbitrator.location, 2));
+	}
+
+	goWandering() {
+		this.addSteering(new Wander(this, 1));
+	}
+
 	update() {
-		// Updating position
+		// дефолтное гуляние желешки
+		if (this.steerings.length === 0) {
+			this.goToOuterArbitrator();
+		}
+
+		// если желешка достаточно близко к арбитру - общаемся
+		if (
+			Math.abs(this.x - this.outerArbitrator.location.x) < this.eps &&
+			Math.abs(this.y - this.outerArbitrator.location.y) < this.eps &&
+			this.steerings[this.steerings.length - 1].constructor.name ===
+				'GoInPoint1'
+		) {
+			// взаимодействие происходит мгновенно - пообщались и ушли
+			this.arbitratorInteract(this.outerArbitrator);
+			this.steerings.splice(-1, 1); // удаляем последний элемент массива
+			this.goWandering();
+		} else if (
+			// TODO: также должны быть открыты ворота
+			Math.abs(this.x - this.innerArbitrator.location.x) < this.eps &&
+			Math.abs(this.y - this.innerArbitrator.location.y) < this.eps &&
+			this.steerings[this.steerings.length - 1].constructor.name ===
+				'GoInPoint1'
+		) {
+			this.arbitratorInteract(this.innerArbitrator);
+			this.steerings.splice(-1, 1); // удаляем последний элемент массива
+			this.goWandering();
+		}
+
 		const body = this.body as Phaser.Physics.Arcade.Body;
 		let imp;
 		this.steerings.forEach(st => {
@@ -55,7 +99,9 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 			this.updateAnimation();
 			this.last = Date.now();
 		}
+		// console.log(this.steerings);
 
+		// обновляем пройденный путь
 		this.updateScouted();
 
 		if (!this.currentTask?.execute()) return;
