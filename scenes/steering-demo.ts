@@ -71,6 +71,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
+
+
 		//Creating characters
 		const steerings: [
 			color: HumanSpriteSheetName,
