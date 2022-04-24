@@ -75,6 +75,10 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		}
 	}
 
+	hateAurora() {
+		this.statePank = 3;
+	}
+
 	useSteering(index: number) {
 		const body = this.body as Phaser.Physics.Arcade.Body;
 
@@ -121,7 +125,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 			case 1: {
 				this.moveToGate();
 				console.log('moveToGate');
-				// if(this.gate.isOpen ){
+				// if(this.gate.  ){
 				// 	this.statePank=1
 				// }
 				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
