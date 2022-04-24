@@ -116,7 +116,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 			case 1: {
 				this.moveToGate();
 				console.log('moveToGate');
-				// if(this.gate.  ){
+				// if(this.gate.isOpen  ){
 				// 	this.statePank=1
 				// }
 				if (
