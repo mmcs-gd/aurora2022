@@ -1,3 +1,4 @@
+import { Vector } from "matter";
 import Fence from "./fence";
 import { Scene } from "./scene";
 import Slime from "./slime";
@@ -5,23 +6,22 @@ import Slime from "./slime";
 export default class Corral extends Phaser.Physics.Arcade.Sprite {
 
 	closed = true;
-	//fence: Fence;
+	fence: Fence;
 
 	constructor(
 		scene: Scene,
-		x: number,
-		y: number,
+		position: Vector,
+		size: Vector,
 		name: string,
 		frame: string | number,
-		width: number,
-		height: number,
+		fence: Fence,
 		readonly animationSets: Map<string, string[]>,
 	) {
-		super(scene, x, y, name, frame);
+		super(scene, position.x, position.y, name, frame);
 		scene.physics.world.enable(this, Phaser.Physics.Arcade.STATIC_BODY);
 		scene.add.existing(this);
-		this.body.setSize(width, height);
-
+		this.body.setSize(size.x, size.y);
+		this.fence = fence;
 	}
 
 	update() {
@@ -52,5 +52,4 @@ export default class Corral extends Phaser.Physics.Arcade.Sprite {
 			//slime.setActive(true);
 		});
 	}
-
 }

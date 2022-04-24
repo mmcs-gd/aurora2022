@@ -16,6 +16,8 @@ import { Scene } from '../src/characters/scene';
 import Corral from '../src/characters/corral';
 import Player from '../src/characters/player';
 import Slime from '../src/characters/slime';
+import BuildingsFactory from '../src/characters/buildings_factory';
+import Vector from '../src/utils/vector';
 
 class StartingScene extends Phaser.Scene implements Scene {
 	slimes: Slime[] = [];
@@ -80,6 +82,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
+		const buildingsFactory = new BuildingsFactory(this);
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 
@@ -108,7 +111,16 @@ class StartingScene extends Phaser.Scene implements Scene {
 		}
 		this.physics.add.collider(player, slimes);
 
-		const corral = characterFactory.buildCorral(150,450,100,150,3);
+		const positionFence = Vector.create(150, 535);
+		const sizeFence = Vector.create(50, 20);
+
+		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
+		this.gameObjects.push(fence);
+
+		const positionCorral = Vector.create(150,450);
+		const sizeCorral = Vector.create(100, 150);
+
+		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral,fence);
         this.gameObjects.push(corral);
 
 		this.input.keyboard.on('keydown-D', () => {
