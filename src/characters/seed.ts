@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
-import Portal from './portal';
+import Sprite = Phaser.Physics.Arcade.Sprite;
+import CharacterFactory from './character_factory';
+import Physics = Phaser.Physics.Arcade.ArcadePhysics;
+import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 
 export default class Seed extends Phaser.Physics.Arcade.Sprite {
 	constructor(
@@ -10,6 +13,11 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 		frame: number,
 		private timeToClose: number,
 		readonly animations: string[],
+		private gameObjects: Sprite[],
+		private characterFactory: CharacterFactory,
+		private physics: Physics,
+		private worldLayer: WorldLayer
+
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -22,18 +30,10 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 
 	update() {
 		if (this.timer > this.timeToClose) {
-			// const portal = new Portal(
-			// 	this.scene,
-			// 	this.x,
-			// 	this.y,
-			// 	'portal',
-			// 	-1,
-			// 	400,
-			// 	5,
-			// 	[]
-			// );
-			// portal.setCollideWorldBounds(true);
 			this.destroy();
+			const portal = this.characterFactory.buildPortal(this.x + 50, this.y +50, 5);
+			this.gameObjects.push(portal);
+			this.physics.add.collider(portal, this.worldLayer);
 		} else this.timer += 1;
 	}
 }

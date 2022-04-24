@@ -69,7 +69,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 
 
 		// add Seed
-		const seed = characterFactory.buildSeed(150, 50);
+		//, this.gameObjects, characterFactory, this.physics, worldLayer
+		const seed = characterFactory.buildSeed(150, 50, this.gameObjects, characterFactory, this.physics, worldLayer);
 		this.gameObjects.push(seed);
 		this.physics.add.collider(seed, worldLayer);
 

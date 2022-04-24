@@ -7,6 +7,9 @@ import { Scene } from './scene';
 import DemoNPC from './demo-npc';
 import Portal from './portal';
 import Seed from './seed'
+import Sprite = Phaser.Physics.Arcade.Sprite;
+import Physics = Phaser.Physics.Arcade.ArcadePhysics;
+import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -108,7 +111,7 @@ export default class CharacterFactory {
 		return portal;
 	}
 
-	buildSeed(x: number, y: number) {
+	buildSeed(x: number, y: number, gameObjects: Sprite[], characterFactory: CharacterFactory, physics:Physics, worldLayer: WorldLayer) {
 		const timeToClose = 300;
 		const seed = new Seed(
 			this.scene,
@@ -118,6 +121,10 @@ export default class CharacterFactory {
 			-1,
 			timeToClose,
 			[],
+			gameObjects,
+			characterFactory,
+			physics,
+			worldLayer
 		);
 		seed.setCollideWorldBounds(true);
 		return seed;
