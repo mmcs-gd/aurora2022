@@ -5,6 +5,12 @@ import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
+import Sprite = Phaser.Physics.Arcade.Sprite;
+import Physics = Phaser.Physics.Arcade.ArcadePhysics;
+import WorldLayer = Phaser.Tilemaps.TilemapLayer;
+import Punk from "./punk";
+import Portal from "./portal";
+import Seed from "./seed";
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -16,6 +22,8 @@ const cyberSpritesheets = [
 	'yellow',
 	'green',
 	'punk',
+	'portal',
+	'seed',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
@@ -63,6 +71,84 @@ export default class CharacterFactory {
 		character.setCollideWorldBounds(true);
 		return character;
 	}
+
+
+	buildPunkCharacter(
+		spriteSheetName: HumanSpriteSheetName,
+		x: number,
+		y: number,
+		gameObjects: Sprite[],
+		physics: Physics,
+		worldLayer: WorldLayer
+	) {
+		const maxSpeed = 100;
+		const cursors = this.scene.input.keyboard.createCursorKeys();
+		const animationSets = this.animationLibrary['punk'];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for punk`);
+		const character = new Punk(
+			this.scene,
+			x,
+			y,
+			spriteSheetName,
+			2,
+			maxSpeed,
+			cursors,
+			animationSets,
+			gameObjects,
+			this,
+			physics,
+			worldLayer
+		);
+		character.setCollideWorldBounds(true);
+		return character;
+	}
+
+
+
+	buildPortal(x: number, y: number, maxSlime: number) {
+		const timeToClose = 400;
+		const portal = new Portal(
+			this.scene,
+			x,
+			y,
+			'portal',
+			-1,
+			timeToClose,
+			maxSlime,
+			[]
+		);
+		portal.setCollideWorldBounds(true);
+		return portal;
+	}
+
+	buildSeed(
+		x: number,
+		y: number,
+		gameObjects: Sprite[],
+		characterFactory: CharacterFactory,
+		physics: Physics,
+		worldLayer: WorldLayer
+	) {
+		const timeToClose = 300;
+		const seed = new Seed(
+			this.scene,
+			x,
+			y,
+			'seed',
+			-1,
+			timeToClose,
+			[],
+			gameObjects,
+			characterFactory,
+			physics,
+			worldLayer
+		);
+		seed.setCollideWorldBounds(true);
+		return seed;
+	}
+
+
 
 	buildTestCharacter(
 		spriteSheetName: HumanSpriteSheetName,
