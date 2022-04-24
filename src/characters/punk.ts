@@ -2,8 +2,6 @@ import Steering from '../ai/steerings/steering';
 
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import CharacterFactory from './character_factory';
-import Physics = Phaser.Physics.Arcade.ArcadePhysics;
-import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import { Wander } from '../ai/steerings/wander';
 import { GoInPoint } from '../ai/steerings/go-point';
 import { Escape } from '../ai/steerings/escape';
@@ -19,8 +17,6 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		readonly animationSets: Map<string, string[]>,
 		private gameObjects: Sprite[],
 		private characterFactory: CharacterFactory,
-		private physics: Physics,
-		private worldLayer: WorldLayer,
 		private gate: Sprite, // class Gate
 		private player: Sprite // class Aurora
 	) {
@@ -57,9 +53,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 			this.x,
 			this.y,
 			this.gameObjects,
-			this.characterFactory,
-			this.physics,
-			this.worldLayer
+			this.characterFactory
 		);
 		this.gameObjects.push(seed);
 	}
