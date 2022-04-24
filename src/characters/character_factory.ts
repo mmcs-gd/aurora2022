@@ -5,11 +5,12 @@ import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
-import Portal from './portal';
-import Seed from './seed'
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import Physics = Phaser.Physics.Arcade.ArcadePhysics;
 import WorldLayer = Phaser.Tilemaps.TilemapLayer;
+import Punk from "./punk";
+import Portal from "./portal";
+import Seed from "./seed";
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -22,12 +23,12 @@ const cyberSpritesheets = [
 	'green',
 	'punk',
 	'portal',
-	'seed'
+	'seed',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
-type HumanSpriteSheetName = typeof cyberSpritesheets[number];
-type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
+export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
+export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
 	constructor(public scene: Scene) {
@@ -71,17 +72,21 @@ export default class CharacterFactory {
 		return character;
 	}
 
-	buildTestCharacter(
+
+	buildPunkCharacter(
 		spriteSheetName: HumanSpriteSheetName,
 		x: number,
-		y: number
+		y: number,
+		gameObjects: Sprite[],
+		physics: Physics,
+		worldLayer: WorldLayer
 	) {
-		const maxSpeed = 75;
+		const maxSpeed = 100;
 		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary['punk'];
 		if (animationSets === undefined)
-			throw new Error(`Not found animations for test`);
-		const character = new DemoNPC(
+			throw new Error(`Not found animations for punk`);
+		const character = new Punk(
 			this.scene,
 			x,
 			y,
@@ -89,11 +94,17 @@ export default class CharacterFactory {
 			2,
 			maxSpeed,
 			cursors,
-			animationSets
+			animationSets,
+			gameObjects,
+			this,
+			physics,
+			worldLayer
 		);
 		character.setCollideWorldBounds(true);
 		return character;
 	}
+
+
 
 	buildPortal(x: number, y: number, maxSlime: number) {
 		const timeToClose = 400;
@@ -111,7 +122,14 @@ export default class CharacterFactory {
 		return portal;
 	}
 
-	buildSeed(x: number, y: number, gameObjects: Sprite[], characterFactory: CharacterFactory, physics:Physics, worldLayer: WorldLayer) {
+	buildSeed(
+		x: number,
+		y: number,
+		gameObjects: Sprite[],
+		characterFactory: CharacterFactory,
+		physics: Physics,
+		worldLayer: WorldLayer
+	) {
 		const timeToClose = 300;
 		const seed = new Seed(
 			this.scene,
@@ -131,6 +149,30 @@ export default class CharacterFactory {
 	}
 
 
+
+	buildTestCharacter(
+		spriteSheetName: HumanSpriteSheetName,
+		x: number,
+		y: number
+	) {
+		const maxSpeed = 50;
+		const cursors = this.scene.input.keyboard.createCursorKeys();
+		const animationSets = this.animationLibrary[spriteSheetName];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for test`);
+		const character = new DemoNPC(
+			this.scene,
+			x,
+			y,
+			spriteSheetName,
+			2,
+			maxSpeed,
+			cursors,
+			animationSets
+		);
+		character.setCollideWorldBounds(true);
+		return character;
+	}
 
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
 		const speed = 40;
