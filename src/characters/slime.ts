@@ -1,17 +1,12 @@
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import { Scene } from './scene';
-import { CellType } from '../ai/scouting_map/cells';
+import { CellType, RawPortal } from '../ai/scouting_map/cells';
 import { ScoutedMap } from '../ai/scouting_map/map';
 import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
-
-const eps = 20;
+import Steering from '../ai/steerings/steering';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
-	private targetPoint: {
-		x: number;
-		y: number;
-	} | null = null;
 	readonly scoutedMap = new ScoutedMap();
 
 	constructor(
@@ -27,66 +22,45 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+
+		this.currentTask = this.defaultTask();
 	}
-	pointOfInterest?: Vector2;
-	nextLocation?: Vector2;
-	wantToJump = false;
-	path: { x: number; y: number }[] = [];
+
+	protected steerings: Steering[] = [];
+	protected last = Date.now();
+
+	currentTask: SlimeTask;
+	defaultTask(): SlimeTask {
+		const x = Phaser.Math.RND.between(-1, 1);
+		const y = Phaser.Math.RND.between(-1, 1);
+		return new WalkTask(this, new Vector2(x, y), 200);
+	}
+
+	addSteering(steering: Steering) {
+		this.steerings.push(steering);
+	}
+
 	update() {
-		if (this.hasArrived()) {
-			this.pointOfInterest = new Vector2(
-				Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
-				Phaser.Math.RND.between(50, this.scene.physics.world.bounds.height - 50)
-			);
-			const { x: neededTileX, y: neededTileY } = this.scene.pixelsToTiles(
-				this.pointOfInterest
-			);
-			const { x: currentPositionX, y: currentPositionY } =
-				this.scene.pixelsToTiles(this.body);
-			if (!this.wantToJump) {
-				this.scene.finder.findPath(
-					currentPositionX,
-					currentPositionY,
-					neededTileX,
-					neededTileY,
-					path => {
-						if (path === null) {
-							console.warn('Slime says: Path was not found, gonna jump!');
-							this.path = [];
-							this.wantToJump = true;
-						} else {
-							this.path = path;
-							console.log('Slime says: Path was found, need to go...');
-							this.selectNextLocation();
-						}
-					}
-				);
-				this.scene.finder.calculate();
-			}
-		}
-		if (this.nextLocation) {
-			const body = this.body as Phaser.Physics.Arcade.Body;
-			const position = body.position;
+		// Updating position
+		const body = this.body as Phaser.Physics.Arcade.Body;
+		let imp;
+		this.steerings.forEach(st => {
+			imp = st.calculateImpulse();
+			body.velocity.x += imp.x * st.force;
+			body.velocity.y += imp.y * st.force;
+		});
 
-			if (position.distance(this.nextLocation) < eps) {
-				this.selectNextLocation();
-			} else {
-				let delta = Math.round(this.nextLocation.x - position.x);
-				if (delta !== 0) {
-					body.setVelocity(delta, 0);
-				} else {
-					delta = Math.round(this.nextLocation.y - position.y);
-
-					body.setVelocity(0, delta);
-				}
-				this.body.velocity
-					.normalize()
-					.scale(Math.min(Math.abs(delta), this.speed));
-			}
+		body.velocity.normalize().scale(this.speed);
+		if (Date.now() - this.last > 600) {
+			this.updateAnimation();
+			this.last = Date.now();
 		}
 
 		this.updateScouted();
-		this.updateAnimation();
+
+		if (!this.currentTask?.execute()) return;
+		const nextTask = this.currentTask.nextTask();
+		this.currentTask = nextTask == null ? this.defaultTask() : nextTask;
 	}
 
 	updateScouted() {
@@ -119,34 +93,90 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 			}
 		}
 	}
-
 	updateAnimation() {
 		const animsController = this.anims;
-		if (this.wantToJump) {
-			animsController.play(this.animations[1], true);
-		} else {
-			animsController.play(this.animations[0], true);
-		}
-	}
-
-	hasArrived() {
-		return (
-			this.pointOfInterest === undefined ||
-			this.pointOfInterest.distance(this.body.position) < eps
-		);
-	}
-
-	selectNextLocation() {
-		const nextTile = this.path.shift();
-		if (nextTile) {
-			this.nextLocation = new Vector2(nextTile).scale(this.scene.tileSize);
-		} else {
-			this.nextLocation = this.body.position;
-		}
+		animsController.play(this.animations[0], true);
 	}
 
 	arbitratorInteract(arbitrator: ArbitratorInstance) {
 		arbitrator.visitedBySlime(this);
-		this.targetPoint = arbitrator.getTarget();
+		const targ = arbitrator.getTarget();
+		this.currentTask =
+			targ == null
+				? this.defaultTask()
+				: new SeekTargetTask(this, new Vector2(targ.x, targ.y));
 	}
 }
+
+class SlimeTask {
+	slime: Slime;
+	completed: boolean;
+	constructor(slime: Slime) {
+		this.slime = slime;
+		this.completed = false;
+	}
+	execute(): boolean {
+		return (this.completed = true);
+	}
+	nextTask(): SlimeTask | null {
+		return null;
+	}
+}
+class WalkTask extends SlimeTask {
+	dir: Vector2;
+	time: number;
+	constructor(slime: Slime, dir: Vector2, time: number) {
+		super(slime);
+		this.dir = dir.normalize();
+		this.time = time;
+	}
+	execute(): boolean {
+		return (this.completed = this.time-- < 0);
+	}
+}
+class SeekTargetTask extends SlimeTask {
+	target: { x: number; y: number };
+	constructor(slime: Slime, target: { x: number; y: number }) {
+		super(slime);
+		this.target = target;
+	}
+	execute(): boolean {
+		if (this.completed) return true;
+		const dx = this.target.x - this.slime.body.position.x;
+		const dy = this.target.y - this.slime.body.position.y;
+		this.slime.body.velocity.set(dx, dy).normalize().scale(this.slime.speed);
+		return (this.completed =
+			Phaser.Math.Distance.BetweenPoints(this.target, this.slime) <
+			this.slime.speed);
+	}
+}
+
+// я хз че делать без класса портала
+class SeekPortalTask extends SeekTargetTask {
+	portal: RawPortal;
+	constructor(slime: Slime, portal: RawPortal) {
+		super(slime, portal);
+		this.portal = portal;
+	}
+	execute(): boolean {
+		if (!super.execute()) return false;
+		// а че желе должен с порталом сделать
+		return true;
+	}
+}
+
+// le deez dock has arrived:
+// Выбирается из загона				| По достижению, есть актуал. инфа о порталах			| Движение к приоритетному порталу
+// Выбирается из загона				| По достижению, нет актуал. инфы о порталах			| Блуждание
+// Блуждание 						| Обнаружение портала									| Движение к арбитру
+// Движение к арбитру				| По достижению											| Получ./передача инфы
+// Движение к ближайшему порталу	| По достижению, не обнаружен							| Блуждание
+// Движение к ближайшему порталу	| По достижению, обнаружен								| Зайти в портал
+// Получ./передача инфы				| Нет инфы о порталах									| Блуждание
+// Получ./передача инфы				| Есть инфа о порталах									| Движение к ближайшему порталу
+// Блуждание						| Аврора поднимает желешку								| Неактивность
+// Движение к цели					| Аврора поднимает желешку								| Неактивность
+// Получ./передача инфы				| Аврора поднимает желешку								| Неактивность
+// Неактивность						| Аврора помещает желешку в загон, есть инфа о порталах	| Получ./передача инфы
+// Получ./передача инфы				| Желешка в загоне, информация передана					| Неактивность
+// Неактивность						| Панк открыл загон										| Выбирается из загона
