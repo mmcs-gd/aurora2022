@@ -79,7 +79,9 @@ export default class CharacterFactory {
 		y: number,
 		gameObjects: Sprite[],
 		physics: Physics,
-		worldLayer: WorldLayer
+		worldLayer: WorldLayer,
+		gate: Sprite,
+		player: Sprite,
 	) {
 		const maxSpeed = 100;
 		const cursors = this.scene.input.keyboard.createCursorKeys();
@@ -98,7 +100,9 @@ export default class CharacterFactory {
 			gameObjects,
 			this,
 			physics,
-			worldLayer
+			worldLayer,
+			gate,
+			player
 		);
 		character.setCollideWorldBounds(true);
 		return character;

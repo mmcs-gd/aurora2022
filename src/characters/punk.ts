@@ -5,6 +5,8 @@ import CharacterFactory from './character_factory';
 import Physics = Phaser.Physics.Arcade.ArcadePhysics;
 import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import { Wander } from '../ai/steerings/wander';
+import {GoInPoint} from "../ai/steerings/go-point";
+import {Escape} from "../ai/steerings/escape";
 
 export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	constructor(
@@ -19,7 +21,9 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		private gameObjects: Sprite[],
 		private characterFactory: CharacterFactory,
 		private physics: Physics,
-		private worldLayer: WorldLayer
+		private worldLayer: WorldLayer,
+		private gate: Sprite,// class Gate
+		private player: Sprite, // class Aurora
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -27,17 +31,21 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		this.setVelocity(1);
 	}
 
-	protected steerings: Steering[] = [new Wander(this, this.gameObjects, 1)];
+	// @ts-ignore
+	protected steerings: Steering[] = [
+		new Wander(this, 1),
+		new GoInPoint(this, this.gate, 1),
+		new Escape(this, this.player, 1)
+	];
 	protected last = Date.now();
 
 	update() {
 		const body = this.body as Phaser.Physics.Arcade.Body;
-		let imp;
-		this.steerings.forEach(st => {
-			imp = st.calculateImpulse();
-			body.velocity.x += imp.x * st.force;
-			body.velocity.y += imp.y * st.force;
-		});
+
+			const imp = this.steerings[1].calculateImpulse();
+			body.velocity.x += imp.x *  this.steerings[1].force;
+			body.velocity.y += imp.y *  this.steerings[1].force;
+
 
 		body.velocity.normalize().scale(this.maxSpeed);
 

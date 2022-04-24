@@ -84,15 +84,34 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			['punk', npc => new Pursuit(npc, player, 1, 1, 1)],
 		];
 		const npcGroup = this.physics.add.group();
-		for (let i = 0; i < steerings.length; i++) {
-			const [skin, steering] = steerings[i];
-			const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
-			npc.setBodySize(40, 30, true);
-			npc.setCollideWorldBounds(true);
-			this.gameObjects.push(npc);
-			npcGroup.add(npc);
-			npc.addSteering(steering(npc));
-		}
+		// for (let i = 0; i < steerings.length; i++) {
+		// 	const [skin, steering] = steerings[i];
+		// 	const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
+		// 	npc.setBodySize(40, 30, true);
+		// 	npc.setCollideWorldBounds(true);
+		// 	this.gameObjects.push(npc);
+		// 	npcGroup.add(npc);
+		// 	npc.addSteering(steering(npc));
+		// }
+
+
+
+		const punk = characterFactory.buildPunkCharacter(
+			'punk',
+			400,
+			400,
+			this.gameObjects,
+			this.physics,
+			worldLayer,
+			player,
+			player
+		);
+		punk.setBodySize(40, 30, true);
+		punk.setCollideWorldBounds(true);
+		this.gameObjects.push(punk);
+		npcGroup.add(punk);
+
+
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
 		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
@@ -106,6 +125,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			this.physics.world.createDebugGraphic();
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
+
 	}
 
 	update() {
