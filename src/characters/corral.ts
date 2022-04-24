@@ -1,9 +1,11 @@
+import Fence from "./fence";
 import { Scene } from "./scene";
 import Slime from "./slime";
 
 export default class Corral extends Phaser.Physics.Arcade.Sprite {
 
 	closed = true;
+	//fence: Fence;
 
 	constructor(
 		scene: Scene,
@@ -25,10 +27,10 @@ export default class Corral extends Phaser.Physics.Arcade.Sprite {
 	update() {
 		this.closeCorral();
 	}
-	
+
 	closeCorral() {
 		//if (closed == true)
-		//return;
+		//	return;
 		const _scene = this.scene as Scene;
 		const slimesOverlap = _scene.physics.add.overlap(this, _scene.slimesGroup, (o1, o2) => {
 			const slime = o2 as Slime;
@@ -41,7 +43,7 @@ export default class Corral extends Phaser.Physics.Arcade.Sprite {
 
 	openCorral() {
 		//if (closed == false)
-			//return;
+		//	return;
 		const _scene = this.scene as Scene;
 		const slimesOverlap = _scene.physics.add.overlap(this, _scene.slimesGroup, (o1, o2) => {
 			const slime = o2 as Slime;
