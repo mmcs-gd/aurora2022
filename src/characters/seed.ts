@@ -3,7 +3,6 @@ import Sprite = Phaser.Physics.Arcade.Sprite;
 import CharacterFactory from './character_factory';
 import Physics = Phaser.Physics.Arcade.ArcadePhysics;
 import WorldLayer = Phaser.Tilemaps.TilemapLayer;
-import Math ;
 
 export default class Seed extends Phaser.Physics.Arcade.Sprite {
 	constructor(
@@ -31,10 +30,9 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 
 	update() {
 
-
 		if (this.timer > this.timeToClose && !this.flag) {
 			this.destroy();
-			const portal = this.characterFactory.buildPortal(this.x, this.y + 50, 5);
+			const portal = this.characterFactory.buildPortal(this.x, this.y, 5);
 			this.gameObjects.push(portal);
 			this.physics.add.collider(portal, this.worldLayer);
 			this.timer =0;

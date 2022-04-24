@@ -134,7 +134,7 @@ export default class CharacterFactory {
 		physics: Physics,
 		worldLayer: WorldLayer
 	) {
-		const timeToClose = 300;
+		const timeToClose = 600;
 		const seed = new Seed(
 			this.scene,
 			x,
