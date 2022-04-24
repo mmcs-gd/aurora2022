@@ -89,7 +89,7 @@ export default class CharacterFactory {
 	}
 
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
-		const speed = 40;
+		const speed = 50;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationLibrary[slimeSpriteSheet].get(
 			this.slimeNumberToName(slimeType)
