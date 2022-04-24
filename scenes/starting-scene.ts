@@ -8,6 +8,7 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import { RawPortal } from '../src/ai/scouting_map/cells';
+import { Wander } from '../src/ai/steerings/wander';
 
 export class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -64,9 +65,10 @@ export class StartingScene extends Phaser.Scene implements Scene {
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
+		// Creating jellys
 		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
-		for (let i = 0; i < 30; i++) {
+		for (let i = 0; i < 1; i++) {
 			const x = Phaser.Math.RND.between(
 				50,
 				this.physics.world.bounds.width - 50
@@ -82,6 +84,7 @@ export class StartingScene extends Phaser.Scene implements Scene {
 			slimes.add(slime);
 			this.physics.add.collider(slime, worldLayer);
 			this.gameObjects.push(slime);
+			slime.addSteering(new Wander(slime, this.gameObjects, 3));
 		}
 		this.physics.add.collider(player, slimes);
 
