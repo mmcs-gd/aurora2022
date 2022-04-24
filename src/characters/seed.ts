@@ -31,6 +31,7 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 			const portal = this.characterFactory.buildPortal(this.x, this.y, 5);
 			this.gameObjects.push(portal);
 			this.physics.add.collider(portal, this.worldLayer);
+			//this.scene.physics.add.collider(portal, this.worldLayer);
 			this.timer = 0;
 			this.flag = true;
 		} else {

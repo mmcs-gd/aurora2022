@@ -83,7 +83,6 @@ export default class CharacterFactory {
 		player: Sprite
 	) {
 		const maxSpeed = 100;
-		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary['punk'];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for punk`);
@@ -94,7 +93,6 @@ export default class CharacterFactory {
 			spriteSheetName,
 			2,
 			maxSpeed,
-			cursors,
 			animationSets,
 			gameObjects,
 			this,

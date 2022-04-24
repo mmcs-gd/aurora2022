@@ -16,7 +16,6 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		name: string,
 		frame: string | number,
 		readonly maxSpeed: number,
-		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>,
 		private gameObjects: Sprite[],
 		private characterFactory: CharacterFactory,
@@ -31,8 +30,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		this.setVelocity(1);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
+	
 	protected steerings: Steering[] = [
 		new Wander(this, 1),
 		new GoInPoint(this, this.gate, 1),
@@ -105,8 +103,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	// 2 - побег от загона
 	// 3 - побег от овроры
 	update() {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
+		
 		switch (this.statePank) {
 			case 0: {
 				this.wander();
@@ -128,8 +125,6 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 				// if(this.gate.  ){
 				// 	this.statePank=1
 				// }
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
 				if (
 					Phaser.Math.Distance.Between(
 						this.x,
