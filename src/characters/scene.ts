@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import EasyStar from 'easystarjs';
 import { RawPortal } from '../ai/scouting_map/cells';
+import Vector from '../utils/vector';
 
 /*
     Интерфейс сцены
@@ -12,6 +13,7 @@ export interface Scene extends Phaser.Scene {
 	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
 	pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
 	getPortal(tile: { x: number; y: number }): RawPortal | null;
+	getSize(): Vector;
 }
 
 /*

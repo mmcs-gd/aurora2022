@@ -14,11 +14,14 @@ import Vector2 = Phaser.Math.Vector2;
 import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
 import { Pursuit } from '../src/ai/steerings/pursuit';
+import Vector from '../src/utils/vector';
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	tileSize = 32;
 	steerings: Steering[] = [];
+	width = 0;
+	height = 0;
 	characterFactory?: CharacterFactory;
 
 	constructor() {
@@ -53,6 +56,9 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			}
 			grid.push(col);
 		}
+
+		this.width = worldLayer.tilemap.height;
+		this.height = worldLayer.tilemap.width;
 
 		this.finder.setGrid(grid);
 		this.finder.setAcceptableTiles([0]);
@@ -127,6 +133,10 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
+	}
+
+	getSize() {
+		return Vector.create(this.width, this.height);
 	}
 }
 

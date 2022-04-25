@@ -1,11 +1,12 @@
 import Steering from '../ai/steerings/steering';
 
-import Sprite = Phaser.Physics.Arcade.Sprite;
 import CharacterFactory from './character_factory';
 import { Wander } from '../ai/steerings/wander';
 import { GoInPoint } from '../ai/steerings/go-point';
 import { Escape } from '../ai/steerings/escape';
 import { StateTable } from '../ai/behaviour/state';
+import Player from './player';
+import Fence from './fence';
 
 type PunkStates = 'wander' | 'moveToGate' | 'moveOutGate' | 'moveOutAurora';
 
@@ -19,8 +20,8 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		readonly maxSpeed: number,
 		readonly animationSets: Map<string, string[]>,
 		private factory: CharacterFactory,
-		private gate: Sprite, // class Gate
-		private player: Sprite // class Aurora
+		private gate: Fence, // class Gate
+		private player: Player // class Aurora
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -33,7 +34,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		);
 		stateTable.addState('moveToGate', this.canOpenGate, 'moveOutGate', () => {
 			console.log('gate opened, run away');
-			// this.gate.open();
+			this.gate.openFence();
 		});
 		stateTable.addState('moveOutGate', this.moveLongEnouth, 'wander', () => {
 			this.currentEscapeTime = 0;
