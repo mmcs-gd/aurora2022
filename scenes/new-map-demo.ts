@@ -10,10 +10,10 @@ import { Scene } from '../src/characters/scene';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import player from '../src/characters/player';
 import slime from '../src/characters/slime';
-import vector from '../src/utils/vector';
 import Vector from '../src/utils/vector';
 import BuildingsFactory from '../src/characters/buildings_factory';
 import Corral from '../src/characters/corral';
+import Fence from '../src/characters/fence';
 
 type LayerDescription = {
 	depth?: number;
@@ -89,6 +89,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	slimes: slime[] = [];
 	slimesGroup: Phaser.Physics.Arcade.Group;
 	corral: Corral;
+
 	width = 0;
 	height = 0;
 	getSize() {
@@ -127,6 +128,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		const buildingsFactory = new BuildingsFactory(this);
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
+		this.player = player;
 		this.gameObjects.push(player);
 
 		const slimes = this.physics.add.group();
@@ -155,13 +157,14 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 
 		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
 		this.gameObjects.push(fence);
+		//this.physics.add.collider(player, fence);
 
-		const positionCorral = Vector.create(1012,225);
+		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);
 
-		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral,fence);
+		const corral = buildingsFactory.buildCorral(positionCorral, sizeCorral, fence);
 		this.corral = corral;
-        this.gameObjects.push(corral);
+		this.gameObjects.push(corral);
 
 
 		this.input.keyboard.on('keydown-D', () => {

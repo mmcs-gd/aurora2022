@@ -122,17 +122,19 @@ class StartingScene extends Phaser.Scene implements Scene {
 		}
 		this.physics.add.collider(player, slimes);
 
-		const positionCorral = Vector.create(150,450);
-		const sizeCorral = Vector.create(100, 150);
-
-		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral);
-        this.gameObjects.push(corral);
-
 		const positionFence = Vector.create(150, 535);
 		const sizeFence = Vector.create(50, 20);
 
-		const fence = buildingsFactory.buildFence(positionFence, sizeFence, corral);
+		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
 		this.gameObjects.push(fence);
+
+		const positionCorral = Vector.create(150,450);
+		const sizeCorral = Vector.create(100, 150);
+
+		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral, fence);
+        this.gameObjects.push(corral);
+
+		
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

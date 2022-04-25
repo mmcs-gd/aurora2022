@@ -5,15 +5,16 @@ import { Scene } from "./scene";
 import Slime from "./slime";
 
 export default class Fence extends Phaser.Physics.Arcade.Sprite {
-	closed = true;
-	corral: Corral;
 
-    constructor(
+	isClosed = true;
+	auroraInCorral = false;
+	collider: Phaser.Physics.Arcade.Collider;
+
+	constructor(
 		scene: Scene,
 		position: Vector,
 		size: Vector,
 		name: string,
-		corral: Corral,
 		frame: string | number,
 		readonly animationSets: Map<string, string[]>,
 	) {
@@ -22,6 +23,28 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		scene.add.existing(this);
 		this.body.setSize(size.x, size.y);
 		this.visible = false;
-		this.corral = corral;
+		const _scene = this.scene as Scene;
+		if (_scene instanceof Phaser.Scene == false) {
+			return;
+		}
+		this.collider = _scene.physics.add.collider(_scene.player, this);
+	}
+
+	closeFence() {
+		const _scene = this.scene as Scene;
+		if (_scene instanceof Phaser.Scene == false) {
+			return;
+		}
+		this.collider = _scene.physics.add.collider(_scene.player, this);
+		this.isClosed = true;
+	}
+
+	openFence() {
+		const _scene = this.scene as Scene;
+		if (_scene instanceof Phaser.Scene == false) {
+			return;
+		}
+		_scene.physics.world.removeCollider(this.collider);
+		this.isClosed = false;
 	}
 }

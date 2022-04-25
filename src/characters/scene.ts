@@ -4,20 +4,23 @@ import Player from './player';
 import Slime from './slime';
 import { RawPortal } from '../ai/scouting_map/cells';
 import Vector from '../utils/vector';
+import Fence from './fence';
+import Corral from './corral';
 
 /*
     Интерфейс сцены
     Здесь описываем требования к сцене, которые нужны для работы классов из src
 */
 export interface Scene extends Phaser.Scene {
-	readonly finder: EasyStar.js;
-	readonly tileSize: number;
+    readonly finder: EasyStar.js;
+    readonly tileSize: number;
     readonly player: Player;
     readonly slimes: Slime[];
     readonly slimesGroup: Physics.Arcade.Group;
-	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
-	pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
-	getPortal(tile: { x: number; y: number }): RawPortal | null;
+    readonly corral: Corral;
+    tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
+    pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
+    getPortal(tile: { x: number; y: number }): RawPortal | null;
     getSize(): Vector;
 }
 

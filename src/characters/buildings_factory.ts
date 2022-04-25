@@ -43,37 +43,38 @@ export default class BuildingsFactory {
 		).createAnimations();
 	}
 
-    buildCorral(
+	buildCorral(
 		corralPosition: Vector,
 		corralSize: Vector,
+		fenceCorral: Fence,
 	) {
 		const animationSets = this.animationLibrary[nameSpritePlayer];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for corrol`);
-        
+
 		const character = new Corral(
 			this.scene,
 			corralPosition,
-            corralSize,
+			corralSize,
 			nameSpritePlayer,
+			fenceCorral,
 			4,
 			animationSets
 		);
 		return character;
 	}
 
-    buildFence(position: Vector, size: Vector, corral: Corral){
-        const animationSets = this.animationLibrary[nameSpritePlayer];
+	buildFence(position: Vector, size: Vector) {
+		const animationSets = this.animationLibrary[nameSpritePlayer];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for corrol`);
-        return new Fence(
-            this.scene, 
-            position,
-            size, 
-            nameSpritePlayer,
-			corral,
-            4,
-            animationSets
-            );
-    }
+		return new Fence(
+			this.scene,
+			position,
+			size,
+			nameSpritePlayer,
+			4,
+			animationSets
+		);
+	}
 }

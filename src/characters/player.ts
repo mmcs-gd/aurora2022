@@ -5,8 +5,9 @@ import Slime from "./slime";
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 
-	nearestObject: Phaser.GameObjects.GameObject[] = [];
+	nearestJelly: Slime;
 	jellyInHands?: Slime = undefined;
+	radius = 60;
 
 	constructor(
 		scene: Phaser.Scene,
@@ -31,6 +32,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		camera.startFollow(this);
 
 		this.pickJelly();
+		this.controlCorral();
+		this.scarePunk();
 	}
 
 	update() {
@@ -55,7 +58,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		this.jellyInHands?.body.position.set(this.body.position.x, this.body.position.y + 3);
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
-		this.updateListNearestObjects();
 		this.updateAnimation();
 
 	}
@@ -82,9 +84,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	//First element in list - Aurora.
-	private updateListNearestObjects() {
-		this.nearestObject = [];
-		const radius = 60;
+	private updateNearestJelly() {
+
 		const spriteOffset = Vector.create(15, 15);
 		const jellySpriteOffset = Vector.create(15, 16);
 		const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
@@ -92,21 +93,19 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		if (_scene instanceof Phaser.Scene == false)
 			return;
 
-		this.scene.children.list.forEach(element => {
-			if (this == element)
-				return;
-			if (element.body == null)
-				return;
-			const position = Vector.create(element.body.position.x, element.body.position.y)
+		for (let i = 0; i < _scene.slimes.length; i++) {
+			const position = Vector.create(_scene.slimes[i].body.position.x, _scene.slimes[i].body.position.y)
 			const distanceSqr =
 				Math.pow(position.x + jellySpriteOffset.x - playerPosition.x, 2) +
 				Math.pow(position.y + jellySpriteOffset.y - playerPosition.y, 2);
-			const inRadius = distanceSqr <= radius * radius;
+			const inRadius = distanceSqr <= this.radius * this.radius;
 			if (inRadius == false)
-				return;
+				continue;
 
-			this.nearestObject.push(element);
-		});
+			this.nearestJelly = _scene.slimes[i];
+			return;
+		}
+
 	}
 
 	pickJelly() {
@@ -117,28 +116,43 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 				return;
 			}
 
-			if (this.nearestObject.length == 0)
+			this.updateNearestJelly();
+
+			if (this.nearestJelly == null)
 				return;
 
-			for (let i = 0; i < this.nearestObject.length; i++) {
-				const element = this.nearestObject[i];
-				if (element instanceof Slime == false)
-					continue;
-
-				const nearSlime = element as Slime;
-				this.jellyInHands = nearSlime;
-				this.jellyInHands.setActive(false);
-				break;
-			}
-
-		});
+			this.jellyInHands = this.nearestJelly;
+			this.jellyInHands.setActive(false);
+		}
 	}
 
 	controlCorral() {
+		this.scene.input.keyboard.on('keydown-T', () => {
+			const _scene = this.scene as Scene;
+			if (_scene instanceof Phaser.Scene == false)
+				return;
 
+			const spriteOffset = Vector.create(15, 15);
+			const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
+			const position = Vector.create(_scene.corral.fenceCorral.body.position.x, _scene.corral.fenceCorral.body.position.y);
+			const distanceSqr =
+				Math.pow(position.x + _scene.corral.fenceCorral.width / 2 - playerPosition.x, 2) +
+				Math.pow(position.y + _scene.corral.fenceCorral.height / 2 - playerPosition.y, 2);
+
+			const inRadius = distanceSqr <= this.radius * this.radius;
+			if (inRadius == false)
+				return;
+
+			if (_scene.corral.fenceCorral.isClosed == true) {
+				_scene.corral.fenceCorral.openFence();
+			}
+			else {
+				_scene.corral.fenceCorral.closeFence();
+			}
+		});
 	}
 
 	scarePunk() {
-		
+
 	}
 }
