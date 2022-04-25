@@ -10,7 +10,7 @@ export class Escape implements Steering {
 	constructor(
 		private owner: Sprite,
 		private pursuer: Sprite,
-		public force: number,
+		public force: number
 	) {}
 
 	calculateImpulse() {
@@ -26,9 +26,11 @@ export class Escape implements Steering {
 		const pursuerSpeed = this.pursuer.body.velocity.length();
 		const predictTime = toPursuer.length() / (ownerSpeed + pursuerSpeed);
 
-		const predictVector = new Vector2(this.pursuer.x + predictTime * pursuerDirection.x,
-						this.pursuer.y + predictTime * pursuerDirection.y);
-	
-		return new Flee(this.owner, predictVector, this.force).calculateImpulse();			
+		const predictVector = new Vector2(
+			this.pursuer.x + predictTime * pursuerDirection.x,
+			this.pursuer.y + predictTime * pursuerDirection.y
+		);
+
+		return new Flee(this.owner, predictVector, this.force).calculateImpulse();
 	}
 }

@@ -11,7 +11,6 @@ export class Flee implements Steering {
 	) {}
 
 	calculateImpulse() {
-                            
 		const toPursuer = new Vector2(
 			this.pursuer.x - this.owner.x,
 			this.pursuer.y - this.owner.y
@@ -19,14 +18,9 @@ export class Flee implements Steering {
 
 		if (isNaN(toPursuer.x)) return new Vector2(0, 0);
 
-        
 		const x = Math.abs(toPursuer.x) < 1 ? 0 : -Math.sign(toPursuer.x);
 		const y = Math.abs(toPursuer.y) < 1 ? 0 : -Math.sign(toPursuer.y);
-        
-       
 
 		return new Vector2(x, y);
 	}
 }
-
-

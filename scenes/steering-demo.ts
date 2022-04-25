@@ -17,7 +17,6 @@ import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
 import { Pursuit } from '../src/ai/steerings/pursuit';
 
-
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
@@ -89,7 +88,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		for (let i = 0; i < steerings.length; i++) {
 			const [skin, steering] = steerings[i];
 			const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
-			
+
 			npc.setBodySize(20, 30, true);
 			npc.setCollideWorldBounds(true);
 			this.gameObjects.push(npc);
@@ -97,7 +96,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			npc.addSteering(steering(npc));
 		}
 
-		
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
 		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
