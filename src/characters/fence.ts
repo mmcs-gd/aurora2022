@@ -8,7 +8,8 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 
 	isClosed = true;
 	auroraInCorral = false;
-	collider: Phaser.Physics.Arcade.Collider;
+	colliderPlayer: Phaser.Physics.Arcade.Collider;
+	colliderJelly: Phaser.Physics.Arcade.Collider;
 
 	constructor(
 		scene: Scene,
@@ -27,7 +28,8 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		if (_scene instanceof Phaser.Scene == false) {
 			return;
 		}
-		this.collider = _scene.physics.add.collider(_scene.player, this);
+		this.colliderPlayer = _scene.physics.add.collider(_scene.player, this);
+		this.colliderJelly = _scene.physics.add.collider(_scene.slimes, this);
 	}
 
 	closeFence() {
@@ -35,7 +37,8 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		if (_scene instanceof Phaser.Scene == false) {
 			return;
 		}
-		this.collider = _scene.physics.add.collider(_scene.player, this);
+		this.colliderPlayer = _scene.physics.add.collider(_scene.player, this);
+		this.colliderJelly = _scene.physics.add.collider(_scene.slimes, this);
 		this.isClosed = true;
 	}
 
@@ -44,7 +47,8 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		if (_scene instanceof Phaser.Scene == false) {
 			return;
 		}
-		_scene.physics.world.removeCollider(this.collider);
+		_scene.physics.world.removeCollider(this.colliderPlayer);
+		_scene.physics.world.removeCollider(this.colliderJelly);
 		this.isClosed = false;
 	}
 }
