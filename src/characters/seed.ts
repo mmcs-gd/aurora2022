@@ -13,7 +13,6 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 		private timeToClose: number,
 		readonly animations: string[],
 		private gameObjects: Sprite[],
-		private characterFactory: CharacterFactory,
 
 	) {
 		super(scene, x, y, name, frame);
@@ -25,12 +24,15 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 
 	update() {
 		if (this.timer > this.timeToClose && !this.flag) {
-			this.destroy();
-			const portal = this.characterFactory.buildPortal(this.x, this.y, 5);
+
+
+			const characterFactory = new CharacterFactory(this.scene);
+			const portal = characterFactory.buildPortal(this.x, this.y, 5);
 			this.gameObjects.push(portal);
 			//this.scene.physics.add.collider(portal, this.worldLayer);
 			this.timer = 0;
 			this.flag = true;
+			this.destroy();
 		} else {
 			this.timer += 1;
 		}

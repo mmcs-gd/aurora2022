@@ -16,7 +16,6 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		readonly maxSpeed: number,
 		readonly animationSets: Map<string, string[]>,
 		private gameObjects: Sprite[],
-		private characterFactory: CharacterFactory,
 		private gate: Sprite, // class Gate
 		private player: Sprite // class Aurora
 	) {
@@ -49,11 +48,11 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	currentEscapeTime = 0;
 
 	createSeed() {
-		const seed = this.characterFactory.buildSeed(
+		const characterFactory = new CharacterFactory(this.scene)
+		const seed = characterFactory.buildSeed(
 			this.x,
 			this.y,
 			this.gameObjects,
-			this.characterFactory
 		);
 		this.gameObjects.push(seed);
 	}

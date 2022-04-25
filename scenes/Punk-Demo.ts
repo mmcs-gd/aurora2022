@@ -95,8 +95,6 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 			400,
 			400,
 			this.gameObjects,
-			this.physics,
-			worldLayer,
 			player,
 			player
 		);

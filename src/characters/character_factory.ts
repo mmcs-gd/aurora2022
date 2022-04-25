@@ -77,8 +77,6 @@ export default class CharacterFactory {
 		x: number,
 		y: number,
 		gameObjects: Sprite[],
-		physics: Physics,
-		worldLayer: WorldLayer,
 		gate: Sprite,
 		player: Sprite
 	) {
@@ -95,7 +93,6 @@ export default class CharacterFactory {
 			maxSpeed,
 			animationSets,
 			gameObjects,
-			this,
 			gate,
 			player
 		);
@@ -123,7 +120,6 @@ export default class CharacterFactory {
 		x: number,
 		y: number,
 		gameObjects: Sprite[],
-		characterFactory: CharacterFactory,
 	) {
 		const timeToClose = 600;
 		const seed = new Seed(
@@ -135,7 +131,6 @@ export default class CharacterFactory {
 			timeToClose,
 			[],
 			gameObjects,
-			characterFactory,
 
 		);
 		seed.setCollideWorldBounds(true);
