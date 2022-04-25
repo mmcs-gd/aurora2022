@@ -1,26 +1,27 @@
-/// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
-
 import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
 import dungeonRoomJson from '../assets/dungeon_room.json';
-import CharacterFactory, {
-	BuildSlimeOptions,
-} from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
+import CharacterFactory from '../src/characters/character_factory';
 import { RawPortal } from '../src/ai/scouting_map/cells';
+import Vector2 = Phaser.Math.Vector2;
 
-export class StartingScene extends Phaser.Scene implements Scene {
+import PortalPng from '../assets/sprites/characters/portal.png';
+import SeedPng from '../assets/sprites/characters/seed.png';
+
+export class PunkDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	tileSize = 32;
 	characterFactory?: CharacterFactory;
 	constructor() {
-		super({ key: 'StartingScene' });
+		super({ key: 'PunkDemoScene' });
 	}
 
 	preload() {
-		//loading map tiles and json with positions
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
+		this.load.image('seed', SeedPng);
+		this.load.image('portal', PortalPng);
 	}
 
 	create() {
@@ -42,7 +43,6 @@ export class StartingScene extends Phaser.Scene implements Scene {
 			const col = [];
 			for (let x = 0; x < worldLayer.tilemap.width; x++) {
 				const tile = worldLayer.tilemap.getTileAt(x, y);
-
 				col.push(tile ? tile.index : 0);
 			}
 			grid.push(col);
@@ -59,45 +59,36 @@ export class StartingScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
-		// Creating characters
-		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 		this.characterFactory = characterFactory;
+		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 		this.physics.add.collider(player, worldLayer);
 
-		const slimes = this.physics.add.group();
-		const params: BuildSlimeOptions = { slimeType: 0 };
-		for (let i = 0; i < 30; i++) {
-			const x = Phaser.Math.RND.between(
-				50,
-				this.physics.world.bounds.width - 50
-			);
-			const y = Phaser.Math.RND.between(
-				50,
-				this.physics.world.bounds.height - 50
-			);
-			params.slimeType = Phaser.Math.RND.between(0, 4);
+		const npcGroup = this.physics.add.group();
 
-			const slime = characterFactory.buildSlime(x, y, params);
+		const punk = characterFactory.buildPunkCharacter(
+			'punk',
+			400,
+			400,
+			player,
+			player
+		);
+		npcGroup.add(punk);
 
-			slimes.add(slime);
-			this.physics.add.collider(slime, worldLayer);
-		}
-		this.physics.add.collider(player, slimes);
+		this.physics.add.collider(npcGroup, player);
+		this.physics.add.collider(npcGroup, npcGroup);
+		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
+			if (!(player instanceof Phaser.Physics.Arcade.Sprite)) return;
+			if (!(obstacle instanceof Phaser.Tilemaps.Tile)) return;
+			avoidObstacles(this.tileSize, player, obstacle);
+		});
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
-
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
 	}
 
-	/*
-    Хотя метод update у спрайтов встроен в Phaser и в v2 вызывался автоматически (что логично ожидать),
-    в v3 из-за новых архитектурных решений это изменилось https://github.com/photonstorm/phaser/pull/3379.
-    Поэтому нужно обновлять спрайты в сцене самостоятельно.
-    В v4 обещают опять переделать.
-    */
 	update() {
 		if (this.characterFactory) {
 			this.characterFactory.gameObjects.forEach(function (element) {
@@ -120,9 +111,40 @@ export class StartingScene extends Phaser.Scene implements Scene {
 		);
 	}
 
-	// TODO: Доставать настоящие координаты порталов.
-	// Обрати внимание, что они должны содердать координаты ячеек, а не тайлов
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
+	}
+}
+
+function avoidObstacles(
+	tileSize: number,
+	playerChar: Phaser.Physics.Arcade.Sprite,
+	obstacleBody: Phaser.Tilemaps.Tile
+) {
+	if (playerChar.body.y < 100) {
+		const ahead = playerChar.body.velocity.scale(tileSize);
+		const obstacleCenter = new Vector2(
+			obstacleBody.x * tileSize,
+			obstacleBody.y * tileSize
+		);
+		const avoidenceForce = obstacleCenter
+			.subtract(ahead)
+			.normalize()
+			.scale(tileSize);
+		const avoidenceForceNorm = avoidenceForce.normalize().scale(tileSize);
+		playerChar.body.velocity
+			.add(avoidenceForceNorm)
+			.normalize()
+			.scale(tileSize);
+		playerChar.body.velocity.normalize().scale(tileSize);
+	} else {
+		const ahead = playerChar.body.velocity.scale(tileSize);
+		const obstacleCenter = new Vector2(
+			obstacleBody.x * tileSize,
+			obstacleBody.y * tileSize
+		);
+		const avoidenceForce = ahead.subtract(obstacleCenter).scale(tileSize);
+		const avoidenceForceNorm = avoidenceForce.normalize().scale(tileSize);
+		playerChar.body.velocity.add(avoidenceForceNorm);
 	}
 }

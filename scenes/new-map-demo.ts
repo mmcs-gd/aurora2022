@@ -74,8 +74,8 @@ function setupFinder(
 
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 36;
+	characterFactory?: CharacterFactory;
 	constructor() {
 		super({ key: 'MapDemo' });
 	}
@@ -106,9 +106,9 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
+		this.characterFactory = characterFactory;
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
-		this.gameObjects.push(player);
 
 		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
@@ -126,7 +126,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			const slime = characterFactory.buildSlime(x, y, params);
 
 			slimes.add(slime);
-			this.gameObjects.push(slime);
 		}
 		this.physics.add.collider(player, slimes);
 
@@ -145,8 +144,8 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	}
 
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}
