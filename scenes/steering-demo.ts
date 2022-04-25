@@ -11,7 +11,6 @@ import { Wander } from '../src/ai/steerings/wander';
 import { GoInPoint } from '../src/ai/steerings/go-point';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
-import Player from '../src/characters/player';
 import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
 import { Pursuit } from '../src/ai/steerings/pursuit';
@@ -19,12 +18,12 @@ import Vector from '../src/utils/vector';
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
 	steerings: Steering[] = [];
 	playerPrefab?: Player;
 	width = 0;
 	height = 0;
+	characterFactory?: CharacterFactory;
 
 	constructor() {
 		super({ key: 'SteeringDemo' });
@@ -73,9 +72,9 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
+		this.characterFactory = characterFactory;
 
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
-		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 		//Creating characters
 		const steerings: [
@@ -93,7 +92,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
 			npc.setBodySize(40, 30, true);
 			npc.setCollideWorldBounds(true);
-			this.gameObjects.push(npc);
 			npcGroup.add(npc);
 			npc.addSteering(steering(npc));
 		}
@@ -113,8 +111,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	}
 
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}

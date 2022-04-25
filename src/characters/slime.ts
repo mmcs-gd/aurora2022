@@ -141,6 +141,9 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	taskStart() {}
+
 	selectNextLocation() {
 		const nextTile = this.path.shift();
 		if (nextTile) {

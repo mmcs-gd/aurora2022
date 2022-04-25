@@ -1,21 +1,28 @@
-class StateTableRow<T = unknown> {
+class StateTableRow<T = unknown, StateT extends string | number = string> {
 	constructor(
-		public readonly initialState: string,
+		public readonly initialState: StateT,
 		public readonly condition: (this: T) => void,
-		public readonly finalState: string,
+		public readonly finalState: StateT,
 		public readonly onStateChanged?: (this: T) => void
 	) {}
 }
 
-class StateTable<T> {
-	private readonly states: StateTableRow<T>[] = [];
+class StateTable<StateT extends string | number = string, T = unknown> {
+	private readonly states: StateTableRow<T, StateT>[] = [];
 	constructor(private readonly context: T) {}
 
-	addState(state: StateTableRow<T>) {
-		this.states.push(state);
+	addState(
+		initialState: StateT,
+		condition: (this: T) => void,
+		finalState: StateT,
+		onStateChanged?: (this: T) => void
+	) {
+		this.states.push(
+			new StateTableRow(initialState, condition, finalState, onStateChanged)
+		);
 	}
 
-	getNextState(current: string) {
+	getNextState(current: StateT) {
 		const row = this.states
 			.filter(x => x.initialState === current)
 			.find(x => x.condition.call(this.context));
@@ -28,4 +35,5 @@ class StateTable<T> {
 		return current;
 	}
 }
-export { StateTableRow, StateTable };
+
+export { StateTable };

@@ -7,6 +7,10 @@ import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import Fence from './fence';
 import DemoNPC from './demo-npc';
+import Sprite = Phaser.Physics.Arcade.Sprite;
+import Punk from './punk';
+import Portal from './portal';
+import Seed from './seed';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -21,10 +25,16 @@ const cyberSpritesheets = [
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
+enum DepthLayers {
+	Stuff = 1,
+	Characters = 2,
+}
+
 export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
 export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
+	readonly gameObjects = new Array<Sprite>();
 	constructor(public scene: Scene) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
@@ -40,6 +50,24 @@ export default class CharacterFactory {
 			slimeConfigJson,
 			slimeSpriteSheet
 		).createAnimations();
+	}
+
+	addSprite(
+		sprite: Sprite,
+		dynamic = true,
+		depth: DepthLayers = dynamic ? DepthLayers.Characters : DepthLayers.Stuff
+	) {
+		if (dynamic) sprite.setCollideWorldBounds(true);
+		sprite.setDepth(depth);
+		this.gameObjects.push(sprite);
+		sprite.on('destroy', () => {
+			const i = this.gameObjects.findIndex(entity => entity === sprite);
+			if (i != -1) {
+				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
+				this.gameObjects.pop();
+			}
+		});
+		return sprite;
 	}
 
 	buildPlayerCharacter(
@@ -62,8 +90,56 @@ export default class CharacterFactory {
 			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
+	}
+
+	buildPunkCharacter(
+		spriteSheetName: HumanSpriteSheetName,
+		x: number,
+		y: number,
+		gate: Sprite,
+		player: Sprite
+	) {
+		const maxSpeed = 100;
+		const animationSets = this.animationLibrary['punk'];
+		if (animationSets === undefined)
+			throw new Error(`Not found animations for punk`);
+		const character = new Punk(
+			this.scene,
+			x,
+			y,
+			spriteSheetName,
+			2,
+			maxSpeed,
+			animationSets,
+			this,
+			gate,
+			player
+		);
+		this.addSprite(character);
+		return character;
+	}
+
+	buildPortal(x: number, y: number, maxSlime: number) {
+		const timeToClose = 400;
+		const portal = new Portal(
+			this.scene,
+			x,
+			y,
+			'portal',
+			timeToClose,
+			maxSlime
+		);
+		this.addSprite(portal, false);
+		return portal;
+	}
+
+	buildSeed(x: number, y: number) {
+		const timeToClose = 1;
+		const seed = new Seed(this.scene, x, y, 'seed', timeToClose, this);
+		this.addSprite(seed, false);
+		return seed;
 	}
 
 	buildTestCharacter(
@@ -72,7 +148,6 @@ export default class CharacterFactory {
 		y: number
 	) {
 		const maxSpeed = 50;
-		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary[spriteSheetName];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for test`);
@@ -83,10 +158,9 @@ export default class CharacterFactory {
 			spriteSheetName,
 			2,
 			maxSpeed,
-			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -106,7 +180,7 @@ export default class CharacterFactory {
 			animations,
 			2
 		);
-		slime.setCollideWorldBounds(true);
+		this.addSprite(slime);
 		return slime;
 	}
 
