@@ -12,16 +12,16 @@ import Corral from './corral';
     Здесь описываем требования к сцене, которые нужны для работы классов из src
 */
 export interface Scene extends Phaser.Scene {
-    readonly finder: EasyStar.js;
-    readonly tileSize: number;
-    readonly player: Player;
-    readonly slimes: Slime[];
-    readonly slimesGroup: Physics.Arcade.Group;
-    readonly corral: Corral;
-    tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
-    pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
-    getPortal(tile: { x: number; y: number }): RawPortal | null;
-    getSize(): Vector;
+	readonly finder: EasyStar.js;
+	readonly tileSize: number;
+	readonly player: Player;
+	readonly slimes: Slime[];
+	readonly slimesGroup: Physics.Arcade.Group;
+	readonly corral: Corral;
+	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
+	pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
+	getPortal(tile: { x: number; y: number }): RawPortal | null;
+	getSize(): Vector;
 }
 
 /*

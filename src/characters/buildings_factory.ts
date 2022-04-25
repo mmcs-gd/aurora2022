@@ -20,7 +20,7 @@ const cyberSpritesheets = [
 	'punk',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
-const nameSpritePlayer = "aurora";
+const nameSpritePlayer = 'aurora';
 
 type HumanSpriteSheetName = typeof cyberSpritesheets[number];
 type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
@@ -43,11 +43,7 @@ export default class BuildingsFactory {
 		).createAnimations();
 	}
 
-	buildCorral(
-		corralPosition: Vector,
-		corralSize: Vector,
-		fenceCorral: Fence,
-	) {
+	buildCorral(corralPosition: Vector, corralSize: Vector, fenceCorral: Fence) {
 		const animationSets = this.animationLibrary[nameSpritePlayer];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for corrol`);

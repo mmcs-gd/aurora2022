@@ -162,10 +162,13 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);
 
-		const corral = buildingsFactory.buildCorral(positionCorral, sizeCorral, fence);
+		const corral = buildingsFactory.buildCorral(
+			positionCorral,
+			sizeCorral,
+			fence
+		);
 		this.corral = corral;
 		this.gameObjects.push(corral);
-
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

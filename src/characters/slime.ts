@@ -34,12 +34,15 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	wantToJump = false;
 	path: { x: number; y: number }[] = [];
 	update() {
-		if (this.activeJelly == true) //Flag active for pick jelly./Флаг для остановки Желешек на руках Авроры, чтоб они не ходили.
-		{
+		if (this.activeJelly == true) {
+			//Flag active for pick jelly./Флаг для остановки Желешек на руках Авроры, чтоб они не ходили.
 			if (this.hasArrived()) {
 				this.pointOfInterest = new Vector2(
 					Phaser.Math.RND.between(0, this.scene.physics.world.bounds.width - 1),
-					Phaser.Math.RND.between(50, this.scene.physics.world.bounds.height - 50)
+					Phaser.Math.RND.between(
+						50,
+						this.scene.physics.world.bounds.height - 50
+					)
 				);
 				const { x: neededTileX, y: neededTileY } = this.scene.pixelsToTiles(
 					this.pointOfInterest

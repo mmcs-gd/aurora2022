@@ -135,7 +135,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
 	}
-	
+
 	getSize() {
 		return Vector.create(this.width, this.height);
 	}

@@ -33,10 +33,9 @@ class StartingScene extends Phaser.Scene implements Scene {
 		Phaser.Scene.call(this, { key: 'StartingScene' });
 	}
 
-	getPortal(tile: { x: number; y: number; }) {
+	getPortal(tile: { x: number; y: number }) {
 		return null;
 	}
-
 
 	preload() {
 		const characterFrameConfig = { frameWidth: 31, frameHeight: 31 };
@@ -66,7 +65,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 		const worldLayer = map.createLayer('Walls', tileset, 0, 0);
 		const aboveLayer = map.createLayer('Upper', tileset, 0, 0);
 
-		worldLayer.width = this.width
+		worldLayer.width = this.width;
 
 		// Setup for A-star
 		// this.finder = new EasyStar.js();
@@ -101,7 +100,7 @@ class StartingScene extends Phaser.Scene implements Scene {
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
-		const slimes = this.slimesGroup = this.physics.add.group();
+		const slimes = (this.slimesGroup = this.physics.add.group());
 		const params: BuildSlimeOptions = { slimeType: 0 };
 		for (let i = 0; i < 30; i++) {
 			const x = Phaser.Math.RND.between(
@@ -128,13 +127,15 @@ class StartingScene extends Phaser.Scene implements Scene {
 		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
 		this.gameObjects.push(fence);
 
-		const positionCorral = Vector.create(150,450);
+		const positionCorral = Vector.create(150, 450);
 		const sizeCorral = Vector.create(100, 150);
 
-		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral, fence);
-        this.gameObjects.push(corral);
-
-		
+		const corral = buildingsFactory.buildCorral(
+			positionCorral,
+			sizeCorral,
+			fence
+		);
+		this.gameObjects.push(corral);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

@@ -1,11 +1,9 @@
-
-import Vector from "../utils/vector";
-import Corral from "./corral";
-import { Scene } from "./scene";
-import Slime from "./slime";
+import Vector from '../utils/vector';
+import Corral from './corral';
+import { Scene } from './scene';
+import Slime from './slime';
 
 export default class Fence extends Phaser.Physics.Arcade.Sprite {
-
 	isClosed = true;
 	auroraInCorral = false;
 	colliderPlayer: Phaser.Physics.Arcade.Collider;
@@ -17,7 +15,7 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		size: Vector,
 		name: string,
 		frame: string | number,
-		readonly animationSets: Map<string, string[]>,
+		readonly animationSets: Map<string, string[]>
 	) {
 		super(scene, position.x, position.y, name, frame);
 		scene.physics.world.enable(this, Phaser.Physics.Arcade.STATIC_BODY);
