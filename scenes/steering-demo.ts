@@ -20,7 +20,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	tileSize = 32;
 	steerings: Steering[] = [];
-	playerPrefab?: Player;
 	width = 0;
 	height = 0;
 	characterFactory?: CharacterFactory;

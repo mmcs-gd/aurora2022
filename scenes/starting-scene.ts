@@ -8,11 +8,18 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import { RawPortal } from '../src/ai/scouting_map/cells';
+import Vector from '../src/utils/vector';
 
 export class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	tileSize = 32;
 	characterFactory?: CharacterFactory;
+
+	width = 0;
+	height = 0;
+	getSize() {
+		return Vector.create(this.width, this.height);
+	}
 	constructor() {
 		super({ key: 'StartingScene' });
 	}
@@ -25,6 +32,8 @@ export class StartingScene extends Phaser.Scene implements Scene {
 
 	create() {
 		const map = this.make.tilemap({ key: 'map' });
+		this.width = map.widthInPixels;
+		this.height = map.heightInPixels;
 
 		// Parameters are the name you gave the tileset in Tiled and then the key of the tileset image in
 		// Phaser's cache (i.e. the name you used in preload)

@@ -1,18 +1,20 @@
 import Vector from '../utils/vector';
+import CharacterFactory from './character_factory';
 import { Scene } from './scene';
 import Slime from './slime';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-	nearestJelly: Slime;
-	jellyInHands?: Slime = undefined;
+	nearestJelly?: Slime;
+	jellyInHands?: Slime;
 	radius = 60;
 
 	constructor(
-		scene: Phaser.Scene,
+		scene: Scene,
 		x: number,
 		y: number,
 		name: string,
 		frame: string | number,
+		readonly factory: CharacterFactory,
 		readonly maxSpeed: number,
 		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>
@@ -24,14 +26,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const camera = scene.cameras.main;
 		camera.zoom = 1.5; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
 		camera.useBounds = true;
-		const _scene = scene as Scene;
-		const size = _scene.getSize();
+		const size = scene.getSize();
 		camera.setBounds(0, 0, size.x, size.y);
 		camera.startFollow(this);
 
 		this.pickJelly();
 		this.controlCorral();
-		this.scarePunk();
+		// this.scarePunk();
+		// TODO
+		this.scene.input.keyboard.on('keydown-E', () => {
+			factory.punks.forEach(punk => punk.hateAurora());
+		});
 	}
 
 	update() {
@@ -91,13 +96,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			this.x + spriteOffset.x,
 			this.y + spriteOffset.y
 		);
-		const _scene = this.scene as Scene;
-		if (_scene instanceof Phaser.Scene == false) return;
-
-		for (let i = 0; i < _scene.slimes.length; i++) {
+		const factory = this.factory;
+		for (let i = 0; i < factory.slimes.length; i++) {
 			const position = Vector.create(
-				_scene.slimes[i].body.position.x,
-				_scene.slimes[i].body.position.y
+				factory.slimes[i].body.position.x,
+				factory.slimes[i].body.position.y
 			);
 			const distanceSqr =
 				Math.pow(position.x + jellySpriteOffset.x - playerPosition.x, 2) +
@@ -105,7 +108,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			const inRadius = distanceSqr <= this.radius * this.radius;
 			if (inRadius == false) continue;
 
-			this.nearestJelly = _scene.slimes[i];
+			this.nearestJelly = factory.slimes[i];
 			return;
 		}
 	}
@@ -129,35 +132,31 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	controlCorral() {
 		this.scene.input.keyboard.on('keydown-T', () => {
-			const _scene = this.scene as Scene;
-			if (_scene instanceof Phaser.Scene == false) return;
-
+			const corral = this.factory.corral;
+			if (!corral) {
+				console.log('Corral not found!');
+				return;
+			}
 			const spriteOffset = Vector.create(15, 15);
 			const playerPosition = Vector.create(
 				this.x + spriteOffset.x,
 				this.y + spriteOffset.y
 			);
 			const position = Vector.create(
-				_scene.corral.fenceCorral.body.position.x,
-				_scene.corral.fenceCorral.body.position.y
+				corral.fence.body.position.x,
+				corral.fence.body.position.y
 			);
 			const distanceSqr =
-				Math.pow(
-					position.x + _scene.corral.fenceCorral.width / 2 - playerPosition.x,
-					2
-				) +
-				Math.pow(
-					position.y + _scene.corral.fenceCorral.height / 2 - playerPosition.y,
-					2
-				);
+				Math.pow(position.x + corral.fence.width / 2 - playerPosition.x, 2) +
+				Math.pow(position.y + corral.fence.height / 2 - playerPosition.y, 2);
 
 			const inRadius = distanceSqr <= this.radius * this.radius;
 			if (inRadius == false) return;
 
-			if (_scene.corral.fenceCorral.isClosed == true) {
-				_scene.corral.fenceCorral.openFence();
+			if (corral.fence.isClosed == true) {
+				corral.fence.openFence();
 			} else {
-				_scene.corral.fenceCorral.closeFence();
+				corral.fence.closeFence();
 			}
 		});
 	}

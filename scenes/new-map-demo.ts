@@ -8,12 +8,7 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import { RawPortal } from '../src/ai/scouting_map/cells';
-import player from '../src/characters/player';
-import slime from '../src/characters/slime';
 import Vector from '../src/utils/vector';
-import BuildingsFactory from '../src/characters/buildings_factory';
-import Corral from '../src/characters/corral';
-import Fence from '../src/characters/fence';
 
 type LayerDescription = {
 	depth?: number;
@@ -80,15 +75,11 @@ function setupFinder(
 
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 36;
 	constructor() {
 		super({ key: 'MapDemo' });
 	}
-	player: player;
-	slimes: slime[] = [];
-	slimesGroup: Phaser.Physics.Arcade.Group;
-	corral: Corral;
+	characterFactory?: CharacterFactory;
 
 	width = 0;
 	height = 0;
@@ -115,8 +106,6 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			.filter(([, { collide: astar }]) => astar)
 			.map(([key]) => key as keyof typeof layersSettings);
 		setupFinder(this.finder, map, collidesLayers);
-		// Setup for collisions
-		console.log(collidesLayers);
 
 		this.width = map.widthInPixels;
 		this.height = map.heightInPixels;
@@ -125,13 +114,10 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
-		const buildingsFactory = new BuildingsFactory(this);
+		this.characterFactory = characterFactory;
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
-		this.player = player;
-		this.gameObjects.push(player);
 
-		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
 		for (let i = 0; i < 30; i++) {
 			const x = Phaser.Math.RND.between(
@@ -143,50 +129,44 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 				this.physics.world.bounds.height - 50
 			);
 			params.slimeType = Phaser.Math.RND.between(0, 4);
-
-			const slime = characterFactory.buildSlime(x, y, params);
-
-			slimes.add(slime);
-			this.slimes.push(slime);
-			this.gameObjects.push(slime);
+			characterFactory.buildSlime(x, y, params);
 		}
-		this.physics.add.collider(player, slimes);
 
 		const positionFence = Vector.create(995, 305);
 		const sizeFence = Vector.create(62, 30);
 
-		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
-		this.gameObjects.push(fence);
-		//this.physics.add.collider(player, fence);
+		const fence = characterFactory.buildFence(positionFence, sizeFence);
 
 		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);
 
-		const corral = buildingsFactory.buildCorral(
+		const corral = characterFactory.buildCorral(
 			positionCorral,
 			sizeCorral,
 			fence
 		);
-		this.corral = corral;
-		this.gameObjects.push(corral);
 
+		characterFactory.buildPunk(100, 200);
+		characterFactory.buildPunk(700, 350);
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
-
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
 		// Устанавливаем коллизии с окружением для игрока и npc
 		collidesLayers.forEach(layerID => {
 			layers[layerID].setCollisionBetween(1, 5000);
-			this.physics.add.collider(player, layers[layerID]);
-			this.physics.add.collider(slimes, layers[layerID]);
+			this.physics.add.collider(characterFactory.dynamicGroup, layers[layerID]);
 		});
+		this.physics.add.collider(
+			characterFactory.dynamicGroup,
+			characterFactory.dynamicGroup
+		);
 	}
 
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}

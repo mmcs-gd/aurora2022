@@ -8,6 +8,7 @@ import Vector2 = Phaser.Math.Vector2;
 
 import PortalPng from '../assets/sprites/characters/portal.png';
 import SeedPng from '../assets/sprites/characters/seed.png';
+import Vector from '../src/utils/vector';
 
 export class PunkDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -15,6 +16,11 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 	characterFactory?: CharacterFactory;
 	constructor() {
 		super({ key: 'PunkDemoScene' });
+	}
+	width = 0;
+	height = 0;
+	getSize() {
+		return Vector.create(this.width, this.height);
 	}
 
 	preload() {
@@ -35,7 +41,8 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 		const belowLayer = map.createLayer('Floor', tileset, 0, 0);
 		const worldLayer = map.createLayer('Walls', tileset, 0, 0);
 		const aboveLayer = map.createLayer('Upper', tileset, 0, 0);
-
+		this.width = map.widthInPixels;
+		this.height = map.heightInPixels;
 		// Setup for A-star
 		// this.finder = new EasyStar.js();
 		const grid = [];
@@ -64,14 +71,16 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 		this.physics.add.collider(player, worldLayer);
 
 		const npcGroup = this.physics.add.group();
-
-		const punk = characterFactory.buildPunkCharacter(
-			'punk',
-			400,
-			400,
-			player,
-			player
+		const fence = characterFactory.buildFence(
+			Vector.create(100, 100),
+			Vector.create(32, 32)
 		);
+		characterFactory.buildCorral(
+			Vector.create(100, 100),
+			Vector.create(32, 32),
+			fence
+		);
+		const punk = characterFactory.buildPunk(400, 400);
 		npcGroup.add(punk);
 
 		this.physics.add.collider(npcGroup, player);
