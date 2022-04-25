@@ -123,7 +123,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 			this.jellyInHands = this.nearestJelly;
 			this.jellyInHands.setActive(false);
-		}
+		});
 	}
 
 	controlCorral() {
