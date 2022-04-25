@@ -22,7 +22,7 @@ export class Arbitrator {
 export class ArbitratorInstance {
 	constructor(
 		private soul: Arbitrator,
-		private location: { x: number; y: number }
+		public location: { x: number; y: number }
 	) {}
 
 	visitedBySlime(slime: Slime) {

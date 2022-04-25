@@ -1,18 +1,13 @@
 /// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
-
+import Portal from '../src/characters/portal';
 import tilemapPng from '../assets/tileset/Green_Meadow_Tileset.png';
 import tilemapJson from '../assets/green_meadow.json';
 import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
-import { RawPortal } from '../src/ai/scouting_map/cells';
-import { Wander } from '../src/ai/steerings/wander';
-import { Pursuit } from '../src/ai/steerings/pursuit';
-import { GameObjects } from 'phaser';
 import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
-import { GoInPoint } from '../src/ai/steerings/go-point';
 
 type LayerDescription = {
 	depth?: number;
@@ -85,8 +80,30 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		super({ key: 'MapDemo' });
 	}
 
-	getPortal(tile: { x: number; y: number }): RawPortal | null {
-		return null;
+	getPortal(pos: { x: number; y: number }): Portal | null {
+		let res = null;
+		this.gameObjects.forEach(e => {
+			if (!(e instanceof Portal)) return;
+			if (e.x == pos.x && e.y == pos.y) res = e;
+		});
+		return res;
+	}
+	getclosestPortal(pos: { x: number; y: number }): Portal | null {
+		const res: Portal[] = [];
+		this.gameObjects.forEach(e => {
+			if (e instanceof Portal) res.push(e);
+		});
+		if (res.length == 0) return null;
+
+		let p = res[0];
+		let d = Phaser.Math.Distance.BetweenPoints(pos, p);
+		res.forEach(e => {
+			const _d = Phaser.Math.Distance.BetweenPoints(pos, e);
+			if (_d >= d) return;
+			p = e;
+			d = _d;
+		});
+		return p;
 	}
 
 	preload() {
@@ -115,9 +132,10 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Создаем глобального арбитра
 		const arbitrator = new Arbitrator();
 		// Создаем локальных арбитров
+		// Координаты арбитров
 		const outerArbitratorCoords = { x: 496.7504208861624, y: 365.5 };
-		const innerArbitratorCoords = { x: 915.5, y: 207.5 };
-
+		const innerArbitratorCoords = { x: 915, y: 200 };
+		// Инстансы арбитров
 		const outerArbitrator = new ArbitratorInstance(
 			arbitrator,
 			outerArbitratorCoords

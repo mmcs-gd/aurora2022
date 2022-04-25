@@ -32,7 +32,6 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 
 	protected steerings: Steering[] = [];
 	protected last = Date.now();
-	protected eps = 40;
 
 	currentTask: SlimeTask;
 	defaultTask(): SlimeTask {
@@ -60,24 +59,24 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	update() {
 		// дефолтное гуляние желешки
 		if (this.steerings.length === 0) {
-			this.goToOuterArbitrator();
+			this.goToInnerArbitrator();
 		}
 
 		// если желешка достаточно близко к арбитру - общаемся
 		if (
-			Math.abs(this.x - this.outerArbitrator.location.x) < this.eps &&
-			Math.abs(this.y - this.outerArbitrator.location.y) < this.eps &&
+			Math.abs(this.x - this.outerArbitrator.location.x) < 40 &&
+			Math.abs(this.y - this.outerArbitrator.location.y) < 40 &&
 			this.steerings[this.steerings.length - 1].constructor.name ===
 				'GoInPoint1'
 		) {
-			// взаимодействие происходит мгновенно - пообщались и ушли
+			// взаимодействие происходит мгновенно - пообщались и ушли (пока что просто гулять)
 			this.arbitratorInteract(this.outerArbitrator);
 			this.steerings.splice(-1, 1); // удаляем последний элемент массива
 			this.goWandering();
 		} else if (
 			// TODO: также должны быть открыты ворота
-			Math.abs(this.x - this.innerArbitrator.location.x) < this.eps &&
-			Math.abs(this.y - this.innerArbitrator.location.y) < this.eps &&
+			Math.abs(this.x - this.innerArbitrator.location.x) < 0 &&
+			Math.abs(this.y - this.innerArbitrator.location.y) < 0 &&
 			this.steerings[this.steerings.length - 1].constructor.name ===
 				'GoInPoint1'
 		) {
@@ -99,7 +98,6 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 			this.updateAnimation();
 			this.last = Date.now();
 		}
-		// console.log(this.steerings);
 
 		// обновляем пройденный путь
 		this.updateScouted();

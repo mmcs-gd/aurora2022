@@ -16,6 +16,9 @@ import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
 import { Pursuit } from '../src/ai/steerings/pursuit';
 
+import PortalPng from '../assets/sprites/characters/portal.png';
+import SeedPng from '../assets/sprites/characters/seed.png';
+
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
@@ -30,6 +33,8 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	preload() {
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
+		this.load.image('seed', SeedPng);
+		this.load.image('portal', PortalPng);
 	}
 
 	create() {
@@ -71,6 +76,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
+
 		//Creating characters
 		const steerings: [
 			color: HumanSpriteSheetName,
@@ -82,15 +88,31 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			['punk', npc => new Pursuit(npc, player, 1, 1, 1)],
 		];
 		const npcGroup = this.physics.add.group();
-		for (let i = 0; i < steerings.length; i++) {
-			const [skin, steering] = steerings[i];
-			const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
-			npc.setBodySize(40, 30, true);
-			npc.setCollideWorldBounds(true);
-			this.gameObjects.push(npc);
-			npcGroup.add(npc);
-			npc.addSteering(steering(npc));
-		}
+		// for (let i = 0; i < steerings.length; i++) {
+		// 	const [skin, steering] = steerings[i];
+		// 	const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
+		// 	npc.setBodySize(40, 30, true);
+		// 	npc.setCollideWorldBounds(true);
+		// 	this.gameObjects.push(npc);
+		// 	npcGroup.add(npc);
+		// 	npc.addSteering(steering(npc));
+		// }
+
+		const punk = characterFactory.buildPunkCharacter(
+			'punk',
+			400,
+			400,
+			this.gameObjects,
+			this.physics,
+			worldLayer,
+			player,
+			player
+		);
+		punk.setBodySize(40, 30, true);
+		punk.setCollideWorldBounds(true);
+		this.gameObjects.push(punk);
+		npcGroup.add(punk);
+
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
 		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
@@ -98,6 +120,10 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			if (!(obstacle instanceof Phaser.Tilemaps.Tile)) return;
 			avoidObstacles(this.tileSize, player, obstacle);
 		});
+
+		// const seed = characterFactory.buildSeed(150, 150, this.gameObjects, characterFactory, this.physics, worldLayer);
+		// this.gameObjects.push(seed);
+		// this.physics.add.collider(seed, worldLayer);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
