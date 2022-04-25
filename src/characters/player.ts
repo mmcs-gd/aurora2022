@@ -1,10 +1,8 @@
-
-import Vector from "../utils/vector";
-import { Scene } from "./scene";
-import Slime from "./slime";
+import Vector from '../utils/vector';
+import { Scene } from './scene';
+import Slime from './slime';
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-
 	nearestJelly: Slime;
 	jellyInHands?: Slime = undefined;
 	radius = 60;
@@ -55,11 +53,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			body.setVelocityY(speed);
 		}
 
-		this.jellyInHands?.body.position.set(this.body.position.x, this.body.position.y + 3);
+		this.jellyInHands?.body.position.set(
+			this.body.position.x,
+			this.body.position.y + 3
+		);
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateAnimation();
-
 	}
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
@@ -85,27 +85,29 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	//First element in list - Aurora.
 	private updateNearestJelly() {
-
 		const spriteOffset = Vector.create(15, 15);
 		const jellySpriteOffset = Vector.create(15, 16);
-		const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
+		const playerPosition = Vector.create(
+			this.x + spriteOffset.x,
+			this.y + spriteOffset.y
+		);
 		const _scene = this.scene as Scene;
-		if (_scene instanceof Phaser.Scene == false)
-			return;
+		if (_scene instanceof Phaser.Scene == false) return;
 
 		for (let i = 0; i < _scene.slimes.length; i++) {
-			const position = Vector.create(_scene.slimes[i].body.position.x, _scene.slimes[i].body.position.y)
+			const position = Vector.create(
+				_scene.slimes[i].body.position.x,
+				_scene.slimes[i].body.position.y
+			);
 			const distanceSqr =
 				Math.pow(position.x + jellySpriteOffset.x - playerPosition.x, 2) +
 				Math.pow(position.y + jellySpriteOffset.y - playerPosition.y, 2);
 			const inRadius = distanceSqr <= this.radius * this.radius;
-			if (inRadius == false)
-				continue;
+			if (inRadius == false) continue;
 
 			this.nearestJelly = _scene.slimes[i];
 			return;
 		}
-
 	}
 
 	pickJelly() {
@@ -118,8 +120,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 			this.updateNearestJelly();
 
-			if (this.nearestJelly == null)
-				return;
+			if (this.nearestJelly == null) return;
 
 			this.jellyInHands = this.nearestJelly;
 			this.jellyInHands.setActive(false);
@@ -129,30 +130,37 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	controlCorral() {
 		this.scene.input.keyboard.on('keydown-T', () => {
 			const _scene = this.scene as Scene;
-			if (_scene instanceof Phaser.Scene == false)
-				return;
+			if (_scene instanceof Phaser.Scene == false) return;
 
 			const spriteOffset = Vector.create(15, 15);
-			const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
-			const position = Vector.create(_scene.corral.fenceCorral.body.position.x, _scene.corral.fenceCorral.body.position.y);
+			const playerPosition = Vector.create(
+				this.x + spriteOffset.x,
+				this.y + spriteOffset.y
+			);
+			const position = Vector.create(
+				_scene.corral.fenceCorral.body.position.x,
+				_scene.corral.fenceCorral.body.position.y
+			);
 			const distanceSqr =
-				Math.pow(position.x + _scene.corral.fenceCorral.width / 2 - playerPosition.x, 2) +
-				Math.pow(position.y + _scene.corral.fenceCorral.height / 2 - playerPosition.y, 2);
+				Math.pow(
+					position.x + _scene.corral.fenceCorral.width / 2 - playerPosition.x,
+					2
+				) +
+				Math.pow(
+					position.y + _scene.corral.fenceCorral.height / 2 - playerPosition.y,
+					2
+				);
 
 			const inRadius = distanceSqr <= this.radius * this.radius;
-			if (inRadius == false)
-				return;
+			if (inRadius == false) return;
 
 			if (_scene.corral.fenceCorral.isClosed == true) {
 				_scene.corral.fenceCorral.openFence();
-			}
-			else {
+			} else {
 				_scene.corral.fenceCorral.closeFence();
 			}
 		});
 	}
 
-	scarePunk() {
-
-	}
+	scarePunk() {}
 }
