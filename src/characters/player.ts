@@ -1,6 +1,6 @@
 
 import Vector from "../utils/vector";
-import { Scene } from "phaser";
+import { Scene } from "./scene";
 import Slime from "./slime";
 
 export default class Player extends Phaser.Physics.Arcade.Sprite {
@@ -25,7 +25,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const camera = scene.cameras.main;
 		camera.zoom = 1.5; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
 		camera.useBounds = true;
-		camera.setBounds(0, 0, 765, 550);
+		const _scene = scene as Scene;
+		const size = _scene.getSize();
+		camera.setBounds(0, 0, size.x, size.y);
 		camera.startFollow(this);
 
 		this.pickJelly();
@@ -87,7 +89,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const jellySpriteOffset = Vector.create(15, 16);
 		const playerPosition = Vector.create(this.x + spriteOffset.x, this.y + spriteOffset.y);
 		const _scene = this.scene as Scene;
-		if (_scene instanceof Scene == false)
+		if (_scene instanceof Phaser.Scene == false)
 			return;
 
 		this.scene.children.list.forEach(element => {
@@ -134,5 +136,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	controlCorral() {
 
+	}
+
+	scarePunk() {
+		
 	}
 }

@@ -46,7 +46,6 @@ export default class BuildingsFactory {
     buildCorral(
 		corralPosition: Vector,
 		corralSize: Vector,
-        fence: Fence,
 	) {
 		const animationSets = this.animationLibrary[nameSpritePlayer];
 		if (animationSets === undefined)
@@ -58,13 +57,12 @@ export default class BuildingsFactory {
             corralSize,
 			nameSpritePlayer,
 			4,
-			fence,
 			animationSets
 		);
 		return character;
 	}
 
-    buildFence(position: Vector, size: Vector){
+    buildFence(position: Vector, size: Vector, corral: Corral){
         const animationSets = this.animationLibrary[nameSpritePlayer];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for corrol`);
@@ -73,7 +71,8 @@ export default class BuildingsFactory {
             position,
             size, 
             nameSpritePlayer,
-            10,
+			corral,
+            4,
             animationSets
             );
     }

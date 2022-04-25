@@ -26,10 +26,17 @@ class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
+	width = 0;
+	height = 0;
 
 	initialize() {
 		Phaser.Scene.call(this, { key: 'StartingScene' });
 	}
+
+	getPortal(tile: { x: number; y: number; }) {
+		return null;
+	}
+
 
 	preload() {
 		const characterFrameConfig = { frameWidth: 31, frameHeight: 31 };
@@ -59,6 +66,8 @@ class StartingScene extends Phaser.Scene implements Scene {
 		const worldLayer = map.createLayer('Walls', tileset, 0, 0);
 		const aboveLayer = map.createLayer('Upper', tileset, 0, 0);
 
+		worldLayer.width = this.width
+
 		// Setup for A-star
 		// this.finder = new EasyStar.js();
 		const grid = [];
@@ -71,6 +80,8 @@ class StartingScene extends Phaser.Scene implements Scene {
 			grid.push(col);
 		}
 
+		this.width = worldLayer.tilemap.height;
+		this.height = worldLayer.tilemap.width;
 		this.finder.setGrid(grid);
 		this.finder.setAcceptableTiles([0]);
 
@@ -111,23 +122,27 @@ class StartingScene extends Phaser.Scene implements Scene {
 		}
 		this.physics.add.collider(player, slimes);
 
-		const positionFence = Vector.create(150, 535);
-		const sizeFence = Vector.create(50, 20);
-
-		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
-		this.gameObjects.push(fence);
-
 		const positionCorral = Vector.create(150,450);
 		const sizeCorral = Vector.create(100, 150);
 
-		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral,fence);
+		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral);
         this.gameObjects.push(corral);
+
+		const positionFence = Vector.create(150, 535);
+		const sizeFence = Vector.create(50, 20);
+
+		const fence = buildingsFactory.buildFence(positionFence, sizeFence, corral);
+		this.gameObjects.push(fence);
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
 			this.add.graphics().setAlpha(0.75).setDepth(20);
 		});
+	}
+
+	getSize() {
+		return Vector.create(this.width, this.height);
 	}
 
 	/*

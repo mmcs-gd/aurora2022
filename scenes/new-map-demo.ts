@@ -8,6 +8,12 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import { RawPortal } from '../src/ai/scouting_map/cells';
+import player from '../src/characters/player';
+import slime from '../src/characters/slime';
+import vector from '../src/utils/vector';
+import Vector from '../src/utils/vector';
+import BuildingsFactory from '../src/characters/buildings_factory';
+import Corral from '../src/characters/corral';
 
 type LayerDescription = {
 	depth?: number;
@@ -79,6 +85,15 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	constructor() {
 		super({ key: 'MapDemo' });
 	}
+	player: player;
+	slimes: slime[] = [];
+	slimesGroup: Phaser.Physics.Arcade.Group;
+	corral: Corral;
+	width = 0;
+	height = 0;
+	getSize() {
+		return Vector.create(this.width, this.height);
+	}
 
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
@@ -102,10 +117,14 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Setup for collisions
 		console.log(collidesLayers);
 
+		this.width = map.widthInPixels;
+		this.height = map.heightInPixels;
+
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		const characterFactory = new CharacterFactory(this);
+		const buildingsFactory = new BuildingsFactory(this);
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
 		this.gameObjects.push(player);
@@ -126,9 +145,24 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			const slime = characterFactory.buildSlime(x, y, params);
 
 			slimes.add(slime);
+			this.slimes.push(slime);
 			this.gameObjects.push(slime);
 		}
 		this.physics.add.collider(player, slimes);
+
+		const positionFence = Vector.create(995, 305);
+		const sizeFence = Vector.create(62, 30);
+
+		const fence = buildingsFactory.buildFence(positionFence, sizeFence);
+		this.gameObjects.push(fence);
+
+		const positionCorral = Vector.create(1012,225);
+		const sizeCorral = Vector.create(225, 150);
+
+		const corral = buildingsFactory.buildCorral(positionCorral,sizeCorral,fence);
+		this.corral = corral;
+        this.gameObjects.push(corral);
+
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
