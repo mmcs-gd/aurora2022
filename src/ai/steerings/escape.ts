@@ -1,27 +1,34 @@
 import Steering from './steering';
 import Phaser from 'phaser';
+import { Flee } from './flee';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
+import { GoToPoint } from './go-point';
+import Player from '../../characters/player';
 
 export class Escape implements Steering {
 	constructor(
 		private owner: Sprite,
-		private objects: { x: number; y: number },
-		public force: number
+		private pursuer: Sprite,
+		public force: number,
 	) {}
 
 	calculateImpulse() {
-		const target = this.objects;
+		const pursuerDirection = this.pursuer.body.velocity;
+		const ownerDirection = (this.owner as Player).body.velocity;
 
-		const toTarget = new Vector2(
-			target.x - this.owner.x,
-			target.y - this.owner.y
+		const toPursuer = new Vector2(
+			this.pursuer.x - this.owner.x,
+			this.pursuer.y - this.owner.y
 		);
 
-		if (isNaN(toTarget.x)) return new Vector2(0, 0);
-		const x = Math.abs(toTarget.x) < 1 ? 0 : -Math.sign(toTarget.x);
-		const y = Math.abs(toTarget.y) < 1 ? 0 : -Math.sign(toTarget.y);
+		const ownerSpeed = this.owner.body.velocity.length();
+		const pursuerSpeed = this.pursuer.body.velocity.length();
+		const predictTime = toPursuer.length() / (ownerSpeed + pursuerSpeed);
 
-		return new Vector2(x, y).normalize();
+		const predictVector = new Vector2(this.pursuer.x + predictTime * pursuerDirection.x,
+						this.pursuer.y + predictTime * pursuerDirection.y);
+	
+		return new Flee(this.owner, predictVector, this.force).calculateImpulse();			
 	}
 }

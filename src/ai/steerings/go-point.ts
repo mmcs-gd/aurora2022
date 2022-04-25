@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
-export class GoInPoint implements Steering {
+export class GoToPoint implements Steering {
 	constructor(
 		private owner: Sprite,
 		private objects: { x: number; y: number },
@@ -19,6 +19,7 @@ export class GoInPoint implements Steering {
 		);
 
 		if (isNaN(toTarget.x)) return new Vector2(0, 0);
+
 		const x = Math.abs(toTarget.x) < 1 ? 0 : -Math.sign(toTarget.x);
 		const y = Math.abs(toTarget.y) < 1 ? 0 : -Math.sign(toTarget.y);
 

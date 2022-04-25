@@ -8,17 +8,15 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import Steering from '../src/ai/steerings/steering';
 import { Wander } from '../src/ai/steerings/wander';
-import { GoInPoint } from '../src/ai/steerings/go-point';
+import { GoToPoint } from '../src/ai/steerings/go-point';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
-<<<<<<< HEAD
-import { RawPortal } from '../src/ai/scouting_map/cells';
-=======
+
 import Player from '../src/characters/player';
 import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
 import { Pursuit } from '../src/ai/steerings/pursuit';
->>>>>>> 1057896562a851d9315b980fd987a83ae2d9fde0
+
 
 export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -81,20 +79,25 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			steeringMaker: (npc: DemoNPC) => Steering
 		][] = [
 			['blue', npc => new Wander(npc, 1)],
-			['green', npc => new GoInPoint(npc, player, 1)],
+			['green', npc => new GoToPoint(npc, player, 1)],
 			['yellow', npc => new Escape(npc, player, 1)],
-			['punk', npc => new Pursuit(npc, player, 1, 1, 1)],
+			['punk', npc => new Pursuit(npc, player, 1)],
 		];
+
 		const npcGroup = this.physics.add.group();
+
 		for (let i = 0; i < steerings.length; i++) {
 			const [skin, steering] = steerings[i];
 			const npc = characterFactory.buildTestCharacter(skin, 100, 200 + 100 * i);
-			npc.setBodySize(40, 30, true);
+			
+			npc.setBodySize(20, 30, true);
 			npc.setCollideWorldBounds(true);
 			this.gameObjects.push(npc);
 			npcGroup.add(npc);
 			npc.addSteering(steering(npc));
 		}
+
+		
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
 		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
@@ -135,8 +138,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
 		return null;
 	}
-<<<<<<< HEAD
-=======
 }
 
 function avoidObstacles(
@@ -170,5 +171,4 @@ function avoidObstacles(
 		const avoidenceForceNorm = avoidenceForce.normalize().scale(tileSize);
 		playerChar.body.velocity.add(avoidenceForceNorm);
 	}
->>>>>>> 1057896562a851d9315b980fd987a83ae2d9fde0
 }
