@@ -2,22 +2,14 @@ import EasyStar from 'easystarjs';
 import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
 import dungeonRoomJson from '../assets/dungeon_room.json';
 import { Scene } from '../src/characters/scene';
-import CharacterFactory, {
-	HumanSpriteSheetName,
-} from '../src/characters/character_factory';
+import CharacterFactory from '../src/characters/character_factory';
 import Steering from '../src/ai/steerings/steering';
-import { Wander } from '../src/ai/steerings/wander';
-import { GoInPoint } from '../src/ai/steerings/go-point';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
 import Player from '../src/characters/player';
-import DemoNPC from '../src/characters/demo-npc';
-import { Escape } from '../src/ai/steerings/escape';
-import { Pursuit } from '../src/ai/steerings/pursuit';
 
 import PortalPng from '../assets/sprites/characters/portal.png';
 import SeedPng from '../assets/sprites/characters/seed.png';
-
 
 export class PunkDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
@@ -71,30 +63,18 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
 
-		const characterFactory = new CharacterFactory(this);
+		const characterFactory = new CharacterFactory(this, this.gameObjects);
 
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
 		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
-		//Creating characters
-		const steerings: [
-			color: HumanSpriteSheetName,
-			steeringMaker: (npc: DemoNPC) => Steering
-		][] = [
-			['blue', npc => new Wander(npc, 1)],
-			['green', npc => new GoInPoint(npc, player, 1)],
-			['yellow', npc => new Escape(npc, player, 1)],
-			['punk', npc => new Pursuit(npc, player, 1, 1, 1)],
-		];
 		const npcGroup = this.physics.add.group();
-
 
 		const punk = characterFactory.buildPunkCharacter(
 			'punk',
 			400,
 			400,
-			this.gameObjects,
 			player,
 			player
 		);
@@ -110,7 +90,6 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 			if (!(obstacle instanceof Phaser.Tilemaps.Tile)) return;
 			avoidObstacles(this.tileSize, player, obstacle);
 		});
-
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox

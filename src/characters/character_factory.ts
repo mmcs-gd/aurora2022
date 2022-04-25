@@ -31,7 +31,8 @@ export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
 export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
-	constructor(public scene: Scene) {
+	// TODO (для Вячеслава): превратить эту фабрику в тварь-менеджера и убрать nullable у gameObjects
+	constructor(public scene: Scene, public gameObjects?: Sprite[]) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
 				scene,
@@ -76,7 +77,6 @@ export default class CharacterFactory {
 		spriteSheetName: HumanSpriteSheetName,
 		x: number,
 		y: number,
-		gameObjects: Sprite[],
 		gate: Sprite,
 		player: Sprite
 	) {
@@ -92,7 +92,7 @@ export default class CharacterFactory {
 			2,
 			maxSpeed,
 			animationSets,
-			gameObjects,
+			this,
 			gate,
 			player
 		);
@@ -113,27 +113,15 @@ export default class CharacterFactory {
 			[]
 		);
 		portal.setCollideWorldBounds(true);
+		this.gameObjects!.push(portal);
 		return portal;
 	}
 
-	buildSeed(
-		x: number,
-		y: number,
-		gameObjects: Sprite[],
-	) {
+	buildSeed(x: number, y: number) {
 		const timeToClose = 600;
-		const seed = new Seed(
-			this.scene,
-			x,
-			y,
-			'seed',
-			-1,
-			timeToClose,
-			[],
-			gameObjects,
-
-		);
+		const seed = new Seed(this.scene, x, y, 'seed', -1, timeToClose, [], this);
 		seed.setCollideWorldBounds(true);
+		this.gameObjects!.push(seed);
 		return seed;
 	}
 
