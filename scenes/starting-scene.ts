@@ -11,8 +11,8 @@ import { RawPortal } from '../src/ai/scouting_map/cells';
 
 export class StartingScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
+	characterFactory?: CharacterFactory;
 	constructor() {
 		super({ key: 'StartingScene' });
 	}
@@ -61,7 +61,7 @@ export class StartingScene extends Phaser.Scene implements Scene {
 		const characterFactory = new CharacterFactory(this);
 		// Creating characters
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
-		this.gameObjects.push(player);
+		this.characterFactory = characterFactory;
 		this.physics.add.collider(player, worldLayer);
 
 		const slimes = this.physics.add.group();
@@ -81,7 +81,6 @@ export class StartingScene extends Phaser.Scene implements Scene {
 
 			slimes.add(slime);
 			this.physics.add.collider(slime, worldLayer);
-			this.gameObjects.push(slime);
 		}
 		this.physics.add.collider(player, slimes);
 
@@ -100,8 +99,8 @@ export class StartingScene extends Phaser.Scene implements Scene {
     В v4 обещают опять переделать.
     */
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}

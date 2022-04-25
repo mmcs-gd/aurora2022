@@ -7,12 +7,10 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 		x: number,
 		y: number,
 		name: string,
-		frame: number,
 		private timeToClose: number,
-		private maxSlime: number,
-		readonly animations: string[]
+		private maxSlime: number
 	) {
-		super(scene, x, y, name, frame);
+		super(scene, x, y, name);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
 	}

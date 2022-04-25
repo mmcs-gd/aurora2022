@@ -25,6 +25,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+		this.setBodySize(40, 30, true);
 		this.setVelocity(1);
 		const stateTable = new StateTable<PunkStates, this>(this);
 		stateTable.addState('wander', this.seeGate, 'moveToGate', () =>

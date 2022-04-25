@@ -7,12 +7,10 @@ export default class Seed extends Phaser.Physics.Arcade.Sprite {
 		x: number,
 		y: number,
 		name: string,
-		frame: number,
 		private timeToClose: number,
-		readonly animations: string[],
 		readonly factory: CharacterFactory
 	) {
-		super(scene, x, y, name, frame);
+		super(scene, x, y, name);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
 	}

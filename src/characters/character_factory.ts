@@ -6,8 +6,6 @@ import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import DemoNPC from './demo-npc';
 import Sprite = Phaser.Physics.Arcade.Sprite;
-import Physics = Phaser.Physics.Arcade.ArcadePhysics;
-import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import Punk from './punk';
 import Portal from './portal';
 import Seed from './seed';
@@ -22,17 +20,20 @@ const cyberSpritesheets = [
 	'yellow',
 	'green',
 	'punk',
-	'portal',
-	'seed',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
+
+enum DepthLayers {
+	Stuff = 1,
+	Characters = 2,
+}
 
 export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
 export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
-	// TODO (для Вячеслава): превратить эту фабрику в тварь-менеджера и убрать nullable у gameObjects
-	constructor(public scene: Scene, public gameObjects?: Sprite[]) {
+	readonly gameObjects = new Array<Sprite>();
+	constructor(public scene: Scene) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
 				scene,
@@ -47,6 +48,24 @@ export default class CharacterFactory {
 			slimeConfigJson,
 			slimeSpriteSheet
 		).createAnimations();
+	}
+
+	addSprite(
+		sprite: Sprite,
+		dynamic = true,
+		depth: DepthLayers = dynamic ? DepthLayers.Characters : DepthLayers.Stuff
+	) {
+		if (dynamic) sprite.setCollideWorldBounds(true);
+		sprite.setDepth(depth);
+		this.gameObjects.push(sprite);
+		sprite.on('destroy', () => {
+			const i = this.gameObjects.findIndex(entity => entity === sprite);
+			if (i != -1) {
+				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
+				this.gameObjects.pop();
+			}
+		});
+		return sprite;
 	}
 
 	buildPlayerCharacter(
@@ -69,7 +88,7 @@ export default class CharacterFactory {
 			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -96,7 +115,7 @@ export default class CharacterFactory {
 			gate,
 			player
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -107,21 +126,17 @@ export default class CharacterFactory {
 			x,
 			y,
 			'portal',
-			-1,
 			timeToClose,
-			maxSlime,
-			[]
+			maxSlime
 		);
-		portal.setCollideWorldBounds(true);
-		this.gameObjects!.push(portal);
+		this.addSprite(portal, false);
 		return portal;
 	}
 
 	buildSeed(x: number, y: number) {
-		const timeToClose = 600;
-		const seed = new Seed(this.scene, x, y, 'seed', -1, timeToClose, [], this);
-		seed.setCollideWorldBounds(true);
-		this.gameObjects!.push(seed);
+		const timeToClose = 1;
+		const seed = new Seed(this.scene, x, y, 'seed', timeToClose, this);
+		this.addSprite(seed, false);
 		return seed;
 	}
 
@@ -131,7 +146,6 @@ export default class CharacterFactory {
 		y: number
 	) {
 		const maxSpeed = 50;
-		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary[spriteSheetName];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for test`);
@@ -142,10 +156,9 @@ export default class CharacterFactory {
 			spriteSheetName,
 			2,
 			maxSpeed,
-			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -165,7 +178,7 @@ export default class CharacterFactory {
 			animations,
 			2
 		);
-		slime.setCollideWorldBounds(true);
+		this.addSprite(slime);
 		return slime;
 	}
 

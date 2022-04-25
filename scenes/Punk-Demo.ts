@@ -3,21 +3,16 @@ import tilemapPng from '../assets/tileset/Dungeon_Tileset.png';
 import dungeonRoomJson from '../assets/dungeon_room.json';
 import { Scene } from '../src/characters/scene';
 import CharacterFactory from '../src/characters/character_factory';
-import Steering from '../src/ai/steerings/steering';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
-import Player from '../src/characters/player';
 
 import PortalPng from '../assets/sprites/characters/portal.png';
 import SeedPng from '../assets/sprites/characters/seed.png';
 
 export class PunkDemoScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 	tileSize = 32;
-	steerings: Steering[] = [];
-	playerPrefab?: Player;
-
+	characterFactory?: CharacterFactory;
 	constructor() {
 		super({ key: 'PunkDemoScene' });
 	}
@@ -63,10 +58,9 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
 
-		const characterFactory = new CharacterFactory(this, this.gameObjects);
-
+		const characterFactory = new CharacterFactory(this);
+		this.characterFactory = characterFactory;
 		const player = characterFactory.buildPlayerCharacter('aurora', 100, 100);
-		this.gameObjects.push(player);
 		this.physics.add.collider(player, worldLayer);
 
 		const npcGroup = this.physics.add.group();
@@ -78,9 +72,6 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 			player,
 			player
 		);
-		punk.setBodySize(40, 30, true);
-		punk.setCollideWorldBounds(true);
-		this.gameObjects.push(punk);
 		npcGroup.add(punk);
 
 		this.physics.add.collider(npcGroup, player);
@@ -99,8 +90,8 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 	}
 
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}
