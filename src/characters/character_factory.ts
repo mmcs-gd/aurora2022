@@ -1,17 +1,18 @@
 import Slime from './slime';
 import Player from './player';
+import Corral from './corral';
 import cyberpunkConfigJson from '../../assets/animations/cyberpunk.json';
 import slimeConfigJson from '../../assets/animations/slime.json';
 import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
+import Fence from './fence';
 import DemoNPC from './demo-npc';
 import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 import Sprite = Phaser.Physics.Arcade.Sprite;
-import Physics = Phaser.Physics.Arcade.ArcadePhysics;
-import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import Punk from './punk';
 import Portal from './portal';
 import Seed from './seed';
+import Vector from '../utils/vector';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -23,15 +24,26 @@ const cyberSpritesheets = [
 	'yellow',
 	'green',
 	'punk',
-	'portal',
-	'seed',
 ] as const;
 const slimeSpriteSheet = 'slime' as const;
 
+enum DepthLayers {
+	Stuff = 1,
+	Characters = 2,
+}
+
 export type HumanSpriteSheetName = typeof cyberSpritesheets[number];
 export type SpriteSheetName = typeof slimeSpriteSheet | HumanSpriteSheetName;
+// на самом деле SpriteFactory, но переименовывать пока не будем
 export default class CharacterFactory {
 	animationLibrary = {} as Record<SpriteSheetName, Map<string, string[]>>;
+	readonly gameObjects = new Array<Sprite>();
+	readonly slimes = new Array<Slime>();
+	readonly slimesGroup: Phaser.Physics.Arcade.Group;
+	readonly dynamicGroup: Phaser.Physics.Arcade.Group;
+	player?: Player;
+	corral?: Corral;
+	readonly punks = new Array<Punk>();
 	constructor(public scene: Scene) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
@@ -47,6 +59,29 @@ export default class CharacterFactory {
 			slimeConfigJson,
 			slimeSpriteSheet
 		).createAnimations();
+		this.slimesGroup = scene.physics.add.group();
+		this.dynamicGroup = scene.physics.add.group();
+	}
+
+	addSprite(
+		sprite: Sprite,
+		dynamic = true,
+		depth: DepthLayers = dynamic ? DepthLayers.Characters : DepthLayers.Stuff
+	) {
+		if (dynamic) {
+			sprite.setCollideWorldBounds(true);
+			this.dynamicGroup.add(sprite);
+		}
+		sprite.setDepth(depth);
+		this.gameObjects.push(sprite);
+		sprite.on('destroy', () => {
+			const i = this.gameObjects.findIndex(entity => entity === sprite);
+			if (i != -1) {
+				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
+				this.gameObjects.pop();
+			}
+		});
+		return sprite;
 	}
 
 	buildPlayerCharacter(
@@ -59,52 +94,43 @@ export default class CharacterFactory {
 		const animationSets = this.animationLibrary['aurora'];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for aurora`);
+		if (this.player) throw new Error(`Game does not support two players`);
 		const character = new Player(
 			this.scene,
 			x,
 			y,
 			spriteSheetName,
 			2,
+			this,
 			maxSpeed,
 			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.player = character;
+		this.addSprite(character);
 		return character;
 	}
 
-	buildPunkCharacter(
-		spriteSheetName: HumanSpriteSheetName,
-		x: number,
-		y: number,
-		gameObjects: Sprite[],
-		physics: Physics,
-		worldLayer: WorldLayer,
-		gate: Sprite,
-		player: Sprite
-	) {
+	buildPunk(x: number, y: number) {
 		const maxSpeed = 100;
-		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary['punk'];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for punk`);
+		if (!this.player) throw new Error(`Player should be created before punk!`);
+		if (!this.corral) throw new Error(`Corral should be created before punk!`);
 		const character = new Punk(
 			this.scene,
 			x,
 			y,
-			spriteSheetName,
+			'punk',
 			2,
 			maxSpeed,
-			cursors,
 			animationSets,
-			gameObjects,
 			this,
-			physics,
-			worldLayer,
-			gate,
-			player
+			this.corral.fence,
+			this.player
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -115,38 +141,17 @@ export default class CharacterFactory {
 			x,
 			y,
 			'portal',
-			-1,
 			timeToClose,
-			maxSlime,
-			[]
+			maxSlime
 		);
-		portal.setCollideWorldBounds(true);
+		this.addSprite(portal, false);
 		return portal;
 	}
 
-	buildSeed(
-		x: number,
-		y: number,
-		gameObjects: Sprite[],
-		characterFactory: CharacterFactory,
-		physics: Physics,
-		worldLayer: WorldLayer
-	) {
-		const timeToClose = 600;
-		const seed = new Seed(
-			this.scene,
-			x,
-			y,
-			'seed',
-			-1,
-			timeToClose,
-			[],
-			gameObjects,
-			characterFactory,
-			physics,
-			worldLayer
-		);
-		seed.setCollideWorldBounds(true);
+	buildSeed(x: number, y: number) {
+		const timeToClose = 300;
+		const seed = new Seed(this.scene, x, y, 'seed', timeToClose, this);
+		this.addSprite(seed, false);
 		return seed;
 	}
 
@@ -156,7 +161,6 @@ export default class CharacterFactory {
 		y: number
 	) {
 		const maxSpeed = 50;
-		const cursors = this.scene.input.keyboard.createCursorKeys();
 		const animationSets = this.animationLibrary[spriteSheetName];
 		if (animationSets === undefined)
 			throw new Error(`Not found animations for test`);
@@ -167,10 +171,9 @@ export default class CharacterFactory {
 			spriteSheetName,
 			2,
 			maxSpeed,
-			cursors,
 			animationSets
 		);
-		character.setCollideWorldBounds(true);
+		this.addSprite(character);
 		return character;
 	}
 
@@ -198,8 +201,47 @@ export default class CharacterFactory {
 			outerArbitrator,
 			innerArbitrator
 		);
-		slime.setCollideWorldBounds(true);
+		this.addSprite(slime);
+		this.slimes.push(slime);
+		this.slimesGroup.add(slime);
+		slime.on('destroy', () => {
+			const i = this.slimes.findIndex(entity => entity === slime);
+			if (i != -1) {
+				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
+				this.gameObjects.pop();
+			}
+		});
 		return slime;
+	}
+
+	buildCorral(corralPosition: Vector, corralSize: Vector, fenceCorral: Fence) {
+		if (!this.player)
+			throw new Error(`Player should be created before corral!`);
+		if (this.corral) throw new Error(`Game does not support two corrals`);
+		const corral = new Corral(
+			this.scene,
+			corralPosition,
+			corralSize,
+			'none',
+			fenceCorral,
+			this.player
+		);
+		this.addSprite(corral, false);
+		this.corral = corral;
+		return corral;
+	}
+
+	buildFence(position: Vector, size: Vector) {
+		if (!this.player) throw new Error(`Player should be created before fence!`);
+		const fence = new Fence(
+			this.scene,
+			position,
+			size,
+			this.player,
+			this.slimesGroup
+		);
+		this.addSprite(fence, false);
+		return fence;
 	}
 
 	slimeNumberToName(n: number): string {

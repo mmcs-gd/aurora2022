@@ -2,18 +2,24 @@ import Phaser from 'phaser';
 import EasyStar from 'easystarjs';
 import Portal from './portal';
 import { RawPortal } from '../ai/scouting_map/cells';
+import Vector from '../utils/vector';
+import slime from './slime';
+import Fence from './fence';
 
 /*
     Интерфейс сцены
     Здесь описываем требования к сцене, которые нужны для работы классов из src
 */
 export interface Scene extends Phaser.Scene {
+	getclosestPortal(slime: slime): Portal | null;
+	readonly fence: Fence;
 	readonly finder: EasyStar.js;
 	readonly tileSize: number;
 
 	tilesToPixels(tile: { x: number; y: number }): Phaser.Math.Vector2;
 	pixelsToTiles(pixels: { x: number; y: number }): Phaser.Math.Vector2;
-	getPortal(tile: { x: number; y: number }): Portal | null;
+	getPortal(tile: { x: number; y: number }): RawPortal | null;
+	getSize(): Vector;
 }
 
 /*

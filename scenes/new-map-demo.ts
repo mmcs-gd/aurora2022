@@ -1,6 +1,7 @@
 /// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
 import Portal from '../src/characters/portal';
+
 import tilemapPng from '../assets/tileset/Green_Meadow_Tileset.png';
 import tilemapJson from '../assets/green_meadow.json';
 import CharacterFactory, {
@@ -8,6 +9,9 @@ import CharacterFactory, {
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
 import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
+import Vector from '../src/utils/vector';
+import Fence from '../src/characters/fence';
+import Player from '../src/characters/player';
 
 type LayerDescription = {
 	depth?: number;
@@ -75,9 +79,18 @@ function setupFinder(
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
+
 	tileSize = 36;
 	constructor() {
 		super({ key: 'MapDemo' });
+	}
+
+	width = 0;
+	height = 0;
+	characterFactory?: CharacterFactory;
+	fence!: Fence;
+	getSize() {
+		return Vector.create(this.width, this.height);
 	}
 
 	getPortal(pos: { x: number; y: number }): Portal | null {
@@ -121,7 +134,9 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			.filter(([, { collide: astar }]) => astar)
 			.map(([key]) => key as keyof typeof layersSettings);
 		setupFinder(this.finder, map, collidesLayers);
-		// Setup for collisions
+
+		this.width = map.widthInPixels;
+		this.height = map.heightInPixels;
 
 		this.physics.world.bounds.width = map.widthInPixels;
 		this.physics.world.bounds.height = map.heightInPixels;
@@ -129,6 +144,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Creating characters
 
 		const characterFactory = new CharacterFactory(this);
+		this.characterFactory = characterFactory;
 		// Создаем глобального арбитра
 		const arbitrator = new Arbitrator();
 		// Создаем локальных арбитров
@@ -151,7 +167,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Создаем желешек
 		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
-		for (let i = 0; i < 1; i++) {
+		for (let i = 0; i < 20; i++) {
 			const x = Phaser.Math.RND.between(
 				50,
 				this.physics.world.bounds.width - 50
@@ -163,8 +179,8 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			params.slimeType = Phaser.Math.RND.between(0, 4);
 
 			const slime = characterFactory.buildSlime(
-				600,
-				350,
+				x,
+				y,
 				params,
 				outerArbitrator,
 				innerArbitrator
@@ -176,6 +192,22 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		this.physics.add.collider(slimes, slimes);
 		this.physics.add.collider(player, slimes);
 
+		const positionFence = Vector.create(995, 305);
+		const sizeFence = Vector.create(62, 30);
+
+		this.fence = characterFactory.buildFence(positionFence, sizeFence);
+
+		const positionCorral = Vector.create(1012, 225);
+		const sizeCorral = Vector.create(225, 150);
+
+		const corral = characterFactory.buildCorral(
+			positionCorral,
+			sizeCorral,
+			this.fence
+		);
+
+		characterFactory.buildPunk(100, 200);
+		characterFactory.buildPunk(700, 350);
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
@@ -185,14 +217,17 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		// Устанавливаем коллизии с окружением для игрока и npc
 		collidesLayers.forEach(layerID => {
 			layers[layerID].setCollisionBetween(1, 5000);
-			this.physics.add.collider(player, layers[layerID]);
-			this.physics.add.collider(slimes, layers[layerID]);
+			this.physics.add.collider(characterFactory.dynamicGroup, layers[layerID]);
 		});
+		this.physics.add.collider(
+			characterFactory.dynamicGroup,
+			characterFactory.dynamicGroup
+		);
 	}
 
 	update() {
-		if (this.gameObjects) {
-			this.gameObjects.forEach(function (element) {
+		if (this.characterFactory) {
+			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});
 		}

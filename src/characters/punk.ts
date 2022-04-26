@@ -1,12 +1,14 @@
 import Steering from '../ai/steerings/steering';
 
-import Sprite = Phaser.Physics.Arcade.Sprite;
 import CharacterFactory from './character_factory';
-import Physics = Phaser.Physics.Arcade.ArcadePhysics;
-import WorldLayer = Phaser.Tilemaps.TilemapLayer;
 import { Wander } from '../ai/steerings/wander';
 import { GoInPoint } from '../ai/steerings/go-point';
 import { Escape } from '../ai/steerings/escape';
+import { StateTable } from '../ai/behaviour/state';
+import Player from './player';
+import Fence from './fence';
+
+type PunkStates = 'wander' | 'moveToGate' | 'moveOutGate' | 'moveOutAurora';
 
 export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	constructor(
@@ -16,23 +18,53 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 		name: string,
 		frame: string | number,
 		readonly maxSpeed: number,
-		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>,
-		private gameObjects: Sprite[],
-		private characterFactory: CharacterFactory,
-		private physics: Physics,
-		private worldLayer: WorldLayer,
-		private gate: Sprite, // class Gate
-		private player: Sprite // class Aurora
+		private factory: CharacterFactory,
+		private gate: Fence, // class Gate
+		private player: Player // class Aurora
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
+		this.setBodySize(40, 30, true);
 		this.setVelocity(1);
+		const stateTable = new StateTable<PunkStates, this>(this);
+		stateTable.addState('wander', this.seeGate, 'moveToGate', () =>
+			console.log('see gate, start move to it')
+		);
+		stateTable.addState('moveToGate', this.canOpenGate, 'moveOutGate', () => {
+			console.log('gate opened, run away');
+			this.gate.openFence();
+		});
+		stateTable.addState('moveOutGate', this.moveLongEnouth, 'wander', () => {
+			this.currentEscapeTime = 0;
+		});
+		stateTable.addState('moveOutAurora', this.moveLongEnouth, 'wander', () => {
+			this.currentEscapeTime = 0;
+		});
+		this.stateTable = stateTable;
 	}
 
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
+	private seeGate(): boolean {
+		return (
+			Phaser.Math.Distance.Between(this.x, this.y, this.gate.x, this.gate.y) <=
+			this.radiusDetectionGate
+		);
+	}
+
+	private canOpenGate(): boolean {
+		return (
+			Phaser.Math.Distance.Between(this.x, this.y, this.gate.x, this.gate.y) <=
+			this.radiusOpenGate
+		);
+	}
+
+	private moveLongEnouth(): boolean {
+		return this.currentEscapeTime > this.timeToEscape;
+	}
+
+	protected stateTable: StateTable<PunkStates, this>;
+
 	protected steerings: Steering[] = [
 		new Wander(this, 1),
 		new GoInPoint(this, this.gate, 1),
@@ -46,7 +78,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	radiusOpenGate = 80;
 
-	statePank = 0;
+	statePank: PunkStates = 'wander';
 
 	timeNow = 0;
 
@@ -55,15 +87,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	currentEscapeTime = 0;
 
 	createSeed() {
-		const seed = this.characterFactory.buildSeed(
-			this.x,
-			this.y,
-			this.gameObjects,
-			this.characterFactory,
-			this.physics,
-			this.worldLayer
-		);
-		this.gameObjects.push(seed);
+		this.factory.buildSeed(this.x, this.y);
 	}
 
 	wander() {
@@ -76,7 +100,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	hateAurora() {
-		this.statePank = 3;
+		this.statePank = 'moveOutAurora';
 	}
 
 	useSteering(index: number) {
@@ -94,77 +118,18 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	moveOutGate() {
 		this.useSteering(3);
+		this.currentEscapeTime += 1;
 	}
 
 	moveOutAurora() {
 		this.useSteering(2);
+		this.currentEscapeTime += 1;
 	}
 
-	// 0 - блуждание
-	// 1- движение к загону
-	// 2 - побег от загона
-	// 3 - побег от овроры
 	update() {
-		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// @ts-ignore
-		switch (this.statePank) {
-			case 0: {
-				this.wander();
-				console.log('wander');
-				if (
-					Phaser.Math.Distance.Between(
-						this.x,
-						this.y,
-						this.gate.x,
-						this.gate.y
-					) <= this.radiusDetectionGate
-				)
-					this.statePank = 1;
-				break;
-			}
-			case 1: {
-				this.moveToGate();
-				console.log('moveToGate');
-				// if(this.gate.  ){
-				// 	this.statePank=1
-				// }
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				if (
-					Phaser.Math.Distance.Between(
-						this.x,
-						this.y,
-						this.gate.x,
-						this.gate.y
-					) <= this.radiusOpenGate
-				) {
-					//this.gate.open()
-					console.log('openGate');
-					this.statePank = 2;
-				}
-				break;
-			}
-			case 2: {
-				this.moveOutGate();
-				if (this.currentEscapeTime > this.timeToEscape) {
-					this.statePank = 0;
-					this.currentEscapeTime = 0;
-				}
-				this.currentEscapeTime += 1;
-				console.log('moveOutGate');
-				break;
-			}
-			case 3: {
-				this.moveOutAurora();
-				if (this.currentEscapeTime > this.timeToEscape) {
-					this.statePank = 0;
-					this.currentEscapeTime = 0;
-				}
-				this.currentEscapeTime += 1;
-				break;
-			}
-		}
-
+		this.statePank = this.stateTable.getNextState(this.statePank);
+		// ts проверит, что PunkStates входит в подмножество keyof Punk
+		this[this.statePank]();
 		//ограничиваем частоту обновления анимаций
 		if (Date.now() - this.last > 600) {
 			this.updateAnimation();

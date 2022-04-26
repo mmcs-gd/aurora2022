@@ -9,7 +9,6 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 		frame: string | number,
 
 		readonly maxSpeed: number,
-		readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys,
 		readonly animationSets: Map<string, string[]>
 	) {
 		super(scene, x, y, name, frame);

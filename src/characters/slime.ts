@@ -7,6 +7,8 @@ import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 import Steering from '../ai/steerings/steering';
 import { GoInPoint } from '../ai/steerings/go-point';
 import { Wander } from '../ai/steerings/wander';
+import { Pursuit } from '../ai/steerings/pursuit';
+import Fence from './fence';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
@@ -19,74 +21,73 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		frame: number,
 		public speed: number,
 		readonly animations: string[],
-		private sightDistance: number,
+		public sightDistance: number,
 		readonly outerArbitrator: ArbitratorInstance,
 		readonly innerArbitrator: ArbitratorInstance
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
-
-		this.currentTask = this.defaultTask();
 	}
 
-	protected steerings: Steering[] = [];
+	public steerings: Steering[] = [];
 	protected last = Date.now();
 
-	currentTask: SlimeTask;
+	currentTask: SlimeTask = this.defaultTask();
+
+	/**
+	 * creates and returns (but not sets to slime) a new default SlimeTask
+	 * @returns new WalkTask making slime wander with no target
+	 */
 	defaultTask(): SlimeTask {
-		const x = Phaser.Math.RND.between(-1, 1);
-		const y = Phaser.Math.RND.between(-1, 1);
-		return new WalkTask(this, new Vector2(x, y), 200);
+		return new WalkTask(this);
+	}
+	/**
+	 * disables slime activity
+	 */
+	taskStop() {
+		this.currentTask = new WaitingTask(this);
+	}
+	/**
+	 * enables slime activity with default task
+	 */
+	taskStart() {
+		this.currentTask = this.defaultTask();
+	}
+	/**
+	 * used to enable slime activity when placed in Zagonsterlitz to escape
+	 * @param gate escape point with pass state
+	 */
+	trap(fence: Fence, arbitrator: ArbitratorInstance) {
+		arbitrator.visitedBySlime(this);
+		this.currentTask = new EscapeTask(this, fence, arbitrator);
 	}
 
 	addSteering(steering: Steering) {
 		this.steerings.push(steering);
 	}
 
-	goToOuterArbitrator() {
-		this.addSteering(new GoInPoint(this, this.outerArbitrator.location, 2));
-	}
-
-	goToInnerArbitrator() {
-		this.addSteering(new GoInPoint(this, this.innerArbitrator.location, 2));
-	}
-
-	goWandering() {
-		this.addSteering(new Wander(this, 1));
+	// костыльная но работающая проверка на нахождение в загоне
+	isInCorral() {
+		if (this.x > 912 && this.x < 1107.5 && this.y > 175.5 && this.y < 273.5) {
+			return true;
+		}
+		return false;
 	}
 
 	update() {
-		// дефолтное гуляние желешки
-		if (this.steerings.length === 0) {
-			this.goToInnerArbitrator();
-		}
-
-		// если желешка достаточно близко к арбитру - общаемся
-		if (
-			Math.abs(this.x - this.outerArbitrator.location.x) < 40 &&
-			Math.abs(this.y - this.outerArbitrator.location.y) < 40 &&
-			this.steerings[this.steerings.length - 1].constructor.name ===
-				'GoInPoint1'
-		) {
-			// взаимодействие происходит мгновенно - пообщались и ушли (пока что просто гулять)
-			this.arbitratorInteract(this.outerArbitrator);
-			this.steerings.splice(-1, 1); // удаляем последний элемент массива
-			this.goWandering();
-		} else if (
-			// TODO: также должны быть открыты ворота
-			Math.abs(this.x - this.innerArbitrator.location.x) < 0 &&
-			Math.abs(this.y - this.innerArbitrator.location.y) < 0 &&
-			this.steerings[this.steerings.length - 1].constructor.name ===
-				'GoInPoint1'
-		) {
-			this.arbitratorInteract(this.innerArbitrator);
-			this.steerings.splice(-1, 1); // удаляем последний элемент массива
-			this.goWandering();
-		}
-
 		const body = this.body as Phaser.Physics.Arcade.Body;
 		let imp;
+		// если желешка внутри загона и загон закрыт
+		if (this.scene.fence.isClosed && this.isInCorral()) {
+			this.currentTask = new WaitingTask(this);
+		} else if (this.isInCorral()) {
+			this.currentTask = new EscapeTask(
+				this,
+				this.scene.fence,
+				this.innerArbitrator
+			);
+		}
 		this.steerings.forEach(st => {
 			imp = st.calculateImpulse();
 			body.velocity.x += imp.x * st.force;
@@ -148,79 +149,273 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		this.currentTask =
 			targ == null
 				? this.defaultTask()
-				: new SeekTargetTask(this, new Vector2(targ.x, targ.y));
+				: new TargetSeekTask(this, new Vector2(targ.x, targ.y));
 	}
 }
 
-class SlimeTask {
+/**
+* abstract class of task for slimes
+
+* supposed to manage slime behaviour for some task execution
+*/
+export class SlimeTask {
 	slime: Slime;
 	completed: boolean;
 	constructor(slime: Slime) {
 		this.slime = slime;
 		this.completed = false;
 	}
+
+	/**
+	 * manages slime at exact moment to execute task
+	 * @returns completion status, TRUE if task completed, FALSE if task in process
+	 */
 	execute(): boolean {
 		return (this.completed = true);
 	}
+
+	/**
+	 * creates and returns a new task object following current on complete
+	 * @returns new SlimeTask object or NULL if no following task specified (recognized by slime as default task)
+	 */
 	nextTask(): SlimeTask | null {
 		return null;
 	}
 }
-class WalkTask extends SlimeTask {
-	dir: Vector2;
-	time: number;
-	constructor(slime: Slime, dir: Vector2, time: number) {
+
+/**
+ * species of SlimeTask
+ *
+ * used as plug disabling slime activity
+ */
+export class WaitingTask extends SlimeTask {
+	constructor(slime: Slime) {
 		super(slime);
-		this.dir = dir.normalize();
-		this.time = time;
 	}
 	execute(): boolean {
-		return (this.completed = this.time-- < 0);
-	}
-}
-class SeekTargetTask extends SlimeTask {
-	target: { x: number; y: number };
-	constructor(slime: Slime, target: { x: number; y: number }) {
-		super(slime);
-		this.target = target;
-	}
-	execute(): boolean {
-		if (this.completed) return true;
-		const dx = this.target.x - this.slime.body.position.x;
-		const dy = this.target.y - this.slime.body.position.y;
-		this.slime.body.velocity.set(dx, dy).normalize().scale(this.slime.speed);
-		return (this.completed =
-			Phaser.Math.Distance.BetweenPoints(this.target, this.slime) <
-			this.slime.speed);
+		this.slime.body.velocity.set(0, 0);
+		return false;
 	}
 }
 
-// я хз че делать без класса портала
-class SeekPortalTask extends SeekTargetTask {
-	portal: RawPortal;
-	constructor(slime: Slime, portal: RawPortal) {
-		super(slime, portal);
-		this.portal = portal;
+/**
+* species of SlimeTask
+
+* used to make slime wander with no target in some direction
+*/
+export class WalkTask extends SlimeTask {
+	st: Wander;
+	radius: number;
+	constructor(slime: Slime) {
+		super(slime);
+		this.radius = slime.scene.tilesToPixels({ x: slime.sightDistance, y: 0 }).x;
+		this.st = new Wander(slime, 1);
 	}
 	execute(): boolean {
-		if (!super.execute()) return false;
-		// а че желе должен с порталом сделать
-		return true;
+		if (this.slime.steerings.length === 0) {
+			this.slime.addSteering(this.st);
+		} else {
+			this.slime.steerings.splice(-1, 1);
+			this.slime.addSteering(this.st);
+		}
+
+		const portal = this.slime.scene.getclosestPortal(this.slime);
+		if (portal == null) return false;
+		return (this.completed =
+			Phaser.Math.Distance.BetweenPoints(this.slime, portal) <= this.radius);
+	}
+	nextTask(): SlimeTask | null {
+		return new ArbitratorSeekTask(
+			this.slime,
+			this.slime.outerArbitrator.location,
+			this.slime.outerArbitrator
+		);
+	}
+}
+/**
+ * species of SlimeTask
+ *
+ * used to make slime move to some point (x, y)
+ *
+ * supposed to be base class for go&interact tasks, therefore property radius stands for action distance
+ */
+export class TargetSeekTask extends SlimeTask {
+	st: GoInPoint;
+	radius = 20;
+	target: { x: number; y: number };
+	constructor(slime: Slime, target: { x: number; y: number }) {
+		super(slime);
+		this.target = slime;
+		this.st = new GoInPoint(slime, target, 1);
+	}
+	execute(): boolean {
+		if (this.slime.steerings.length === 0) {
+			this.slime.addSteering(this.st);
+		} else {
+			this.slime.steerings.splice(-1, 1);
+			this.slime.addSteering(this.st);
+		}
+		return (this.completed =
+			Phaser.Math.Distance.BetweenPoints(this.target, this.slime) <
+			this.radius);
+	}
+	nextTask(): SlimeTask | null {
+		return new WaitingTask(this.slime); // дошла до цели и ждет
+	}
+}
+/**
+ * species of SlimeTask
+ *
+ * used to make slime move to some mutable game object
+ */
+export class ObjectSeekTask extends SlimeTask {
+	st: Pursuit;
+	radius = 20;
+	target: Phaser.Physics.Arcade.Sprite;
+	constructor(slime: Slime, target: Phaser.Physics.Arcade.Sprite) {
+		super(slime);
+		this.target = target;
+		this.st = new Pursuit(slime, target, 1, this.slime.speed, 0);
+	}
+	execute(): boolean {
+		if (this.completed) return true;
+
+		if (this.slime.steerings.length === 0) {
+			this.slime.addSteering(this.st);
+		} else {
+			this.slime.steerings.splice(-1, 1);
+			this.slime.addSteering(this.st);
+		}
+
+		if (Phaser.Math.Distance.BetweenPoints(this.slime, this.target) < 100) {
+			this.slime.body.velocity.set(0, 0);
+			return false;
+		}
+
+		return (this.completed =
+			Phaser.Math.Distance.BetweenPoints(this.target, this.slime) <
+			this.radius);
+	}
+}
+/**
+ * species of SeekTargetTask
+ *
+ * used to make slime move to portal and interact with it if reached
+ *
+ * must take only portal position copy to seek and check if it still exist at such location before interact
+ */
+export class PortalSeekTask extends TargetSeekTask {
+	constructor(slime: Slime, portal: { x: number; y: number }) {
+		super(slime, portal);
+	}
+
+	nextTask(): SlimeTask | null {
+		const portal = this.slime.scene.getPortal(this.target);
+		if (portal == null) return new WalkTask(this.slime);
+		// желе пытается залезть в лужу
+		// если желе пристроилось к луже, создает себе WaitingTask, иначе идет гулять (return null)
+		return new WaitingTask(this.slime);
+	}
+}
+/**
+ * species of SeekTargetTask
+ *
+ * used to make slime escape from Zagonsterlitz through open gates and switch to next task according to arbitrator target
+ *
+ * specifies next task as PortalSeekTask if arbitrator have such target or WalkTask if no target
+ */
+export class EscapeTask extends TargetSeekTask {
+	arbitrator: ArbitratorInstance;
+	fence: Fence;
+	constructor(slime: Slime, fence: Fence, arbitrator: ArbitratorInstance) {
+		super(slime, fence);
+		this.fence = fence;
+		this.arbitrator = arbitrator;
+	}
+	execute(): boolean {
+		return super.execute();
+	}
+	nextTask(): SlimeTask | null {
+		const targ = this.arbitrator.getTarget();
+		if (targ === null) {
+			return new WalkTask(this.slime);
+		} else {
+			return new PortalSeekTask(this.slime, targ);
+		}
+	}
+}
+
+/**
+ * species of SeekTargetTask
+ *
+ * used to make slime escape from Zagonsterlitz through open gates and switch to next task according to arbitrator target
+ *
+ * species next task as PortalSeekTask if arbitrator have such target or WalkTask if no target
+ */
+export class ArbitratorSeekTask extends TargetSeekTask {
+	arbitrator: ArbitratorInstance;
+	constructor(
+		slime: Slime,
+		target: { x: number; y: number },
+		arbitrator: ArbitratorInstance
+	) {
+		super(slime, target);
+		this.arbitrator = arbitrator;
+	}
+	nextTask(): SlimeTask | null {
+		this.arbitrator.visitedBySlime(this.slime);
+		const targ = this.arbitrator.getTarget();
+		if (targ === null) {
+			return new WalkTask(this.slime);
+		} else {
+			return new TargetSeekTask(this.slime, new Vector2(targ.x, targ.y));
+		}
 	}
 }
 
 // le deez dock has arrived:
+//_______________________________________________________________________________________________________________________
 // Выбирается из загона				| По достижению, есть актуал. инфа о порталах			| Движение к приоритетному порталу
+// EscapeTask			->	PortalSeekTask		:	arbitrator.targ != null
+//_______________________________________________________________________________________________________________________
 // Выбирается из загона				| По достижению, нет актуал. инфы о порталах			| Блуждание
+// EscapeTask			->	WalkTask			:	arbitrator.targ == null
+//_______________________________________________________________________________________________________________________
 // Блуждание 						| Обнаружение портала									| Движение к арбитру
+// WalkTask				->	ArbitratorSeekTask	:	distance(closestPortal) <= sightDistance
+//_______________________________________________________________________________________________________________________
 // Движение к арбитру				| По достижению											| Получ./передача инфы
+// ArbitratorSeekTask	.	execute()			:	TargetSeekTask.execute()==true
+//_______________________________________________________________________________________________________________________
 // Движение к ближайшему порталу	| По достижению, не обнаружен							| Блуждание
+// PortalSeekTask		->	WalkTask			:	closestPortal == null || distance(closestPortal) > slime.speed
+//_______________________________________________________________________________________________________________________
 // Движение к ближайшему порталу	| По достижению, обнаружен								| Зайти в портал
+// PortalSeekTask		->	WaitingTask			:	distance(closestPortal) < slime.speed
+//_______________________________________________________________________________________________________________________
 // Получ./передача инфы				| Нет инфы о порталах									| Блуждание
+// currentTask			=	WalkTask			:	arbitrator.targ == null
+//_______________________________________________________________________________________________________________________
 // Получ./передача инфы				| Есть инфа о порталах									| Движение к ближайшему порталу
+// currentTask			->	PortalSeekTask		:	arbitrator.targ != null
+//_______________________________________________________________________________________________________________________
 // Блуждание						| Аврора поднимает желешку								| Неактивность
+// 													taskStop()
+//_______________________________________________________________________________________________________________________
 // Движение к цели					| Аврора поднимает желешку								| Неактивность
+// 													taskStop()
+//_______________________________________________________________________________________________________________________
 // Получ./передача инфы				| Аврора поднимает желешку								| Неактивность
+// 													taskStop()
+//_______________________________________________________________________________________________________________________
 // Неактивность						| Аврора помещает желешку в загон, есть инфа о порталах	| Получ./передача инфы
+//													trap()
+//_______________________________________________________________________________________________________________________
 // Получ./передача инфы				| Желешка в загоне, информация передана					| Неактивность
+//													trap()
+//_______________________________________________________________________________________________________________________
 // Неактивность						| Панк открыл загон										| Выбирается из загона
+// EscapeTask			.	execute()			:	gate.closed == false
+
+//______________________________________________
+// я таких больших комментариев в жизни не писал

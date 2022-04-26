@@ -7,12 +7,11 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 		x: number,
 		y: number,
 		name: string,
-		frame: number,
 		private timeToClose: number,
 		public capacity: number,
 		readonly animations: string[]
 	) {
-		super(scene, x, y, name, frame);
+		super(scene, x, y, name);
 		scene.physics.world.enable(this);
 		scene.add.existing(this);
 	}
@@ -29,13 +28,6 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 		}
 		return false;
 	}
-
-	// destroyPortalWithoutSlime() {
-	// 	this.slimes.forEach(element => {
-	// 		element.taskStart();
-	// 	});
-	// 	this.destroy();
-	// }
 
 	update() {
 		if (this.count === this.capacity) {
