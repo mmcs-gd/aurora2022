@@ -199,8 +199,7 @@ export default class CharacterFactory {
 			slimeSpriteSheet,
 			9 * slimeType,
 			speed,
-			animations,
-			2
+			animations
 		);
 		this.addSprite(slime);
 		this.slimes.push(slime);

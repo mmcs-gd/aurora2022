@@ -1,21 +1,26 @@
 import Steering from './steering';
 import Phaser from 'phaser';
+import { GoToPoint } from './go-point';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
 
 export class Pursuit implements Steering {
 	constructor(
 		private owner: Sprite,
-		private target: Sprite,
-		public force: number,
-		readonly ownerSpeed: number,
-		readonly targetSpeed: number
+		private targetsrc: Sprite,
+		public force: number
 	) {}
 
 	calculateImpulse() {
 		const searcherDirection = this.owner.body.velocity;
-		const target = this.target;
-		const targetDirection = target.body.velocity;
+		const target = {
+			x: this.targetsrc.body.position.x,
+			y: this.targetsrc.body.position.y,
+		};
+		const targetDirection = {
+			x: this.targetsrc.body.velocity.x,
+			y: this.targetsrc.body.velocity.y,
+		};
 		const toTarget = new Vector2(
 			this.owner.x - target.x,
 			this.owner.y - target.y
@@ -23,18 +28,24 @@ export class Pursuit implements Steering {
 		const relativeHeading = searcherDirection.dot(targetDirection);
 
 		if (toTarget.dot(targetDirection) < 0 || relativeHeading > -0.95) {
-			const predictTime =
-				toTarget.length() / (this.targetSpeed + this.ownerSpeed);
-			toTarget.x += predictTime * targetDirection.x;
-			toTarget.y += predictTime * targetDirection.y;
+			return new GoToPoint(
+				this.owner,
+				{ x: target.x, y: target.y },
+				this.force
+			).calculateImpulse();
 		}
 
-		if (isNaN(toTarget.x)) return new Vector2(0, 0);
-		const x =
-			Math.abs(toTarget.x) < 1 ? 0 : -Math.sign(toTarget.x) * this.ownerSpeed;
-		const y =
-			Math.abs(toTarget.y) < 1 ? 0 : -Math.sign(toTarget.y) * this.ownerSpeed;
+		const ownerSpeed = this.owner.body.velocity.length();
+		const targetSpeed = this.targetsrc.body.velocity.length();
+		const predictTime = toTarget.length() / (targetSpeed + ownerSpeed);
 
-		return new Vector2(x, y);
+		target.x += predictTime * targetDirection.x;
+		target.y += predictTime * targetDirection.y;
+
+		return new GoToPoint(
+			this.owner,
+			{ x: target.x, y: target.y },
+			this.force
+		).calculateImpulse();
 	}
 }
