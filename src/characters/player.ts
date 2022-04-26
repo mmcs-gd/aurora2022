@@ -8,7 +8,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	jellyInHands?: Slime;
 	radius = 60;
 	textAuroraScream?: Phaser.GameObjects.Text;
-
+	screamTimer?: Phaser.Time.TimerEvent;
 	//Фразы надо придумать геймдизам и нарративщикам
 	variousPhrases: string[] = [
 		'Гуляй отсюда.',
@@ -42,7 +42,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		this.pickJelly();
 		this.controlCorral();
 		this.scarePunk();
-		//this.destroyPortal(); - Ниже описан метод - нет порталов, не работает метод. Нужен на факторке.
+		this.destroyPortal(); // Ниже описан метод - нет порталов, не работает метод. Нужен на факторке.
 	}
 
 	update() {
@@ -71,6 +71,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateAnimation();
+
+		if (this.textAuroraScream) {
+			this.textAuroraScream.x = this.x;
+			this.textAuroraScream.y = this.y;
+		}
 	}
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
@@ -197,18 +202,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 				const inRadius = distanceSqr <= this.radius * this.radius;
 				if (inRadius == false) continue;
 
+				this.textAuroraScream?.destroy();
+				this.screamTimer?.destroy();
 				this.textAuroraScream = this.scene.add.text(
 					position.x,
 					position.y,
-					this.variousPhrases[
-						Math.floor(Math.random() * this.variousPhrases.length)
-					]
+					Phaser.Utils.Array.GetRandom(this.variousPhrases)
 				);
-				const triggerTimer = this.scene.time.addEvent({
+				this.textAuroraScream?.setDepth(10);
+				this.screamTimer = this.scene.time.addEvent({
 					callback: this.timerEvent,
 					callbackScope: this,
 					delay: 3000, // 1000 = 1 second
-					loop: true,
 				});
 
 				factory.punks[i].hateAurora();
@@ -223,35 +228,39 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	//Готовый метод уничтожения порталов, просто вставьте сюда функции уничтожения порталов, больше ничего не нужно.
 
-	// destroyPortal() {
-	// 	this.scene.input.keyboard.on('keydown-R', () => {
-	// 		const factory = this.factory;
-	// 		for (let i = 0; i < factory.portals.length; i++) {
-	// 			if (!factory.portals[i]) {
-	// 				console.log('Portal not found!');
-	// 				continue;
-	// 			}
+	destroyPortal() {
+		this.scene.input.keyboard.on('keydown-R', () => {
+			const factory = this.factory;
+			for (let i = 0; i < factory.portals.length; i++) {
+				if (!factory.portals[i]) {
+					console.log('Portal not found!');
+					continue;
+				}
 
-	// 			const spriteOffset = Vector.create(15, 15);
-	// 			const playerPosition = Vector.create(
-	// 				this.x + spriteOffset.x,
-	// 				this.y + spriteOffset.y
-	// 			);
-	// 			const position = Vector.create(
-	// 				factory.portals[i].body.position.x,
-	// 				factory.portals[i].body.position.y
-	// 			);
-	// 			const distanceSqr =
-	// 				Math.pow(position.x + factory.portals[i].width / 2 - playerPosition.x, 2) +
-	// 				Math.pow(position.y + factory.portals[i].height / 2 - playerPosition.y, 2);
+				const spriteOffset = Vector.create(15, 15);
+				const playerPosition = Vector.create(
+					this.x + spriteOffset.x,
+					this.y + spriteOffset.y
+				);
+				const position = Vector.create(
+					factory.portals[i].body.position.x,
+					factory.portals[i].body.position.y
+				);
+				const distanceSqr =
+					Math.pow(
+						position.x + factory.portals[i].width / 2 - playerPosition.x,
+						2
+					) +
+					Math.pow(
+						position.y + factory.portals[i].height / 2 - playerPosition.y,
+						2
+					);
 
-	// 			const inRadius = distanceSqr <= this.radius * this.radius;
-	// 			if (inRadius == false) continue;
+				const inRadius = distanceSqr <= this.radius * this.radius;
+				if (inRadius == false) continue;
 
-	// 			Вот здесь и находится уничтожние порталов - только прописать нужную функцию.
-
-	// 			factory.portal[i].destroyPortal();
-	// 		}
-	// 	});
-	// }
+				factory.portals[i].destroyWithSlimes();
+			}
+		});
+	}
 }

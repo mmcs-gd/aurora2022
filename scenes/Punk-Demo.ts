@@ -5,9 +5,6 @@ import { Scene } from '../src/characters/scene';
 import CharacterFactory from '../src/characters/character_factory';
 import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
-
-import PortalPng from '../assets/sprites/characters/portal.png';
-import SeedPng from '../assets/sprites/characters/seed.png';
 import Vector from '../src/utils/vector';
 
 export class PunkDemoScene extends Phaser.Scene implements Scene {
@@ -26,8 +23,6 @@ export class PunkDemoScene extends Phaser.Scene implements Scene {
 	preload() {
 		this.load.image('tiles', tilemapPng);
 		this.load.tilemapTiledJSON('map', dungeonRoomJson);
-		this.load.image('seed', SeedPng);
-		this.load.image('portal', PortalPng);
 	}
 
 	create() {

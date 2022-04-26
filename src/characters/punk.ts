@@ -80,7 +80,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	statePank: PunkStates = 'wander';
 
-	timeNow = 0;
+	timeNow = 501;
 
 	timeToEscape = 300;
 

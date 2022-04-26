@@ -43,6 +43,7 @@ export default class CharacterFactory {
 	player?: Player;
 	corral?: Corral;
 	readonly punks = new Array<Punk>();
+	readonly portals = new Array<Portal>();
 	constructor(public scene: Scene) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
@@ -145,6 +146,14 @@ export default class CharacterFactory {
 			maxSlime
 		);
 		this.addSprite(portal, false);
+		this.portals.push(portal);
+		portal.on('destroy', () => {
+			const i = this.portals.findIndex(entity => entity === portal);
+			if (i != -1) {
+				this.portals[i] = this.portals[this.portals.length - 1];
+				this.portals.pop();
+			}
+		});
 		return portal;
 	}
 
@@ -199,8 +208,8 @@ export default class CharacterFactory {
 		slime.on('destroy', () => {
 			const i = this.slimes.findIndex(entity => entity === slime);
 			if (i != -1) {
-				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
-				this.gameObjects.pop();
+				this.slimes[i] = this.slimes[this.slimes.length - 1];
+				this.slimes.pop();
 			}
 		});
 		return slime;
