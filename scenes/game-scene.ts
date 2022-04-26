@@ -9,7 +9,6 @@ import CharacterFactory, {
 import { Scene } from '../src/characters/scene';
 import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
 import Vector from '../src/utils/vector';
-import Fence from '../src/characters/fence';
 
 type LayerDescription = {
 	depth?: number;
@@ -74,12 +73,12 @@ function setupFinder(
 	finder.setAcceptableTiles([0]);
 }
 
-export class NewMapScene extends Phaser.Scene implements Scene {
+export class GameScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
 
 	tileSize = 36;
 	constructor() {
-		super({ key: 'MapDemo' });
+		super({ key: 'Game' });
 	}
 
 	width = 0;
