@@ -101,6 +101,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	hateAurora() {
 		this.statePank = 'moveOutAurora';
+		//console.log('Oh no, please!');
 	}
 
 	useSteering(index: number) {

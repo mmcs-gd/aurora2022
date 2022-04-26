@@ -130,6 +130,7 @@ export default class CharacterFactory {
 			this.player
 		);
 		this.addSprite(character);
+		this.punks.push(character);
 		return character;
 	}
 
