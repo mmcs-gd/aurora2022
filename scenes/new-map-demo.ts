@@ -88,7 +88,14 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	}
 
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
-		return null;
+		return (
+			this.characterFactory?.portals
+				.find(portal => {
+					const portalTile = this.pixelsToTiles(portal);
+					return portalTile.x == tile.x && portalTile.y == tile.y;
+				})
+				?.raw() || null
+		);
 	}
 
 	preload() {
@@ -132,10 +139,11 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			characterFactory.buildSlime(x, y, params);
 		}
 
-		const positionFence = Vector.create(995, 305);
-		const sizeFence = Vector.create(62, 30);
-
-		const fence = characterFactory.buildFence(positionFence, sizeFence);
+		const fence = characterFactory.buildFence(
+			layers['Corral.Doors'],
+			1736,
+			1222
+		);
 
 		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);

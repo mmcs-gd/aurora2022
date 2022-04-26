@@ -80,7 +80,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	statePank: PunkStates = 'wander';
 
-	timeNow = 0;
+	timeNow = 501;
 
 	timeToEscape = 300;
 
@@ -101,6 +101,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	hateAurora() {
 		this.statePank = 'moveOutAurora';
+		//console.log('Oh no, please!');
 	}
 
 	useSteering(index: number) {

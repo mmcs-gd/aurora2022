@@ -7,6 +7,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	nearestJelly?: Slime;
 	jellyInHands?: Slime;
 	radius = 60;
+	textAuroraScream?: Phaser.GameObjects.Text;
+	screamTimer?: Phaser.Time.TimerEvent;
+	//Фразы надо придумать геймдизам и нарративщикам
+	variousPhrases: string[] = [
+		'Гуляй отсюда.',
+		'Это мои Желешки!!!!',
+		'Ты куда лезешь?',
+		'Крути педали, пока не дали...',
+	];
 
 	constructor(
 		scene: Scene,
@@ -32,11 +41,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 		this.pickJelly();
 		this.controlCorral();
-		// this.scarePunk();
-		// TODO
-		this.scene.input.keyboard.on('keydown-E', () => {
-			factory.punks.forEach(punk => punk.hateAurora());
-		});
+		this.scarePunk();
+		this.destroyPortal(); // Ниже описан метод - нет порталов, не работает метод. Нужен на факторке.
 	}
 
 	update() {
@@ -65,6 +71,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		// Normalize and scale the velocity so that player can't move faster along a diagonal
 		body.velocity.normalize().scale(speed);
 		this.updateAnimation();
+
+		if (this.textAuroraScream) {
+			this.textAuroraScream.x = this.x;
+			this.textAuroraScream.y = this.y;
+		}
 	}
 	updateAnimation() {
 		const animations = this.animationSets.get('Walk')!;
@@ -88,7 +99,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		}
 	}
 
-	//First element in list - Aurora.
 	private updateNearestJelly() {
 		const spriteOffset = Vector.create(15, 15);
 		const jellySpriteOffset = Vector.create(15, 16);
@@ -157,6 +167,99 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 				corral.fence.openFence();
 			} else {
 				corral.fence.closeFence();
+			}
+		});
+	}
+
+	scarePunk() {
+		this.scene.input.keyboard.on('keydown-E', () => {
+			const factory = this.factory;
+			for (let i = 0; i < factory.punks.length; i++) {
+				if (!factory.punks[i]) {
+					console.log('Punk not found!');
+					continue;
+				}
+
+				const spriteOffset = Vector.create(15, 15);
+				const playerPosition = Vector.create(
+					this.x + spriteOffset.x,
+					this.y + spriteOffset.y
+				);
+				const position = Vector.create(
+					factory.punks[i].body.position.x,
+					factory.punks[i].body.position.y
+				);
+				const distanceSqr =
+					Math.pow(
+						position.x + factory.punks[i].width / 2 - playerPosition.x,
+						2
+					) +
+					Math.pow(
+						position.y + factory.punks[i].height / 2 - playerPosition.y,
+						2
+					);
+
+				const inRadius = distanceSqr <= this.radius * this.radius;
+				if (inRadius == false) continue;
+
+				this.textAuroraScream?.destroy();
+				this.screamTimer?.destroy();
+				this.textAuroraScream = this.scene.add.text(
+					position.x,
+					position.y,
+					Phaser.Utils.Array.GetRandom(this.variousPhrases)
+				);
+				this.textAuroraScream?.setDepth(10);
+				this.screamTimer = this.scene.time.addEvent({
+					callback: this.timerEvent,
+					callbackScope: this,
+					delay: 3000, // 1000 = 1 second
+				});
+
+				factory.punks[i].hateAurora();
+				return;
+			}
+		});
+	}
+
+	public timerEvent(): void {
+		this.textAuroraScream?.destroy();
+	}
+
+	//Готовый метод уничтожения порталов, просто вставьте сюда функции уничтожения порталов, больше ничего не нужно.
+
+	destroyPortal() {
+		this.scene.input.keyboard.on('keydown-R', () => {
+			const factory = this.factory;
+			for (let i = 0; i < factory.portals.length; i++) {
+				if (!factory.portals[i]) {
+					console.log('Portal not found!');
+					continue;
+				}
+
+				const spriteOffset = Vector.create(15, 15);
+				const playerPosition = Vector.create(
+					this.x + spriteOffset.x,
+					this.y + spriteOffset.y
+				);
+				const position = Vector.create(
+					factory.portals[i].body.position.x,
+					factory.portals[i].body.position.y
+				);
+				const distanceSqr =
+					Math.pow(
+						position.x + factory.portals[i].width / 2 - playerPosition.x,
+						2
+					) +
+					Math.pow(
+						position.y + factory.portals[i].height / 2 - playerPosition.y,
+						2
+					);
+
+				const inRadius = distanceSqr <= this.radius * this.radius;
+				if (inRadius == false) continue;
+
+				factory.portals[i].destroyWithSlimes();
 			}
 		});
 	}
