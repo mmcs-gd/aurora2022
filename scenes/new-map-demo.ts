@@ -139,12 +139,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 			characterFactory.buildSlime(x, y, params);
 		}
 
-		const positionFence = Vector.create(995, 305);
-		const sizeFence = Vector.create(62, 30);
-
 		const fence = characterFactory.buildFence(
-			positionFence,
-			sizeFence,
 			layers['Corral.Doors'],
 			1736,
 			1222

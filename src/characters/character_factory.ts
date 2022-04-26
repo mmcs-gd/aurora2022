@@ -233,8 +233,6 @@ export default class CharacterFactory {
 	}
 
 	buildFence(
-		position: Vector,
-		size: Vector,
 		tileLayer: Phaser.Tilemaps.TilemapLayer,
 		tileIndexClose: number,
 		tileIndexOpen: number
@@ -242,8 +240,6 @@ export default class CharacterFactory {
 		if (!this.player) throw new Error(`Player should be created before fence!`);
 		const fence = new Fence(
 			this.scene,
-			position,
-			size,
 			tileLayer,
 			tileIndexClose,
 			tileIndexOpen,

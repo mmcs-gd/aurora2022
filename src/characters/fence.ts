@@ -1,4 +1,3 @@
-import Vector from '../utils/vector';
 import Player from './player';
 import { Scene } from './scene';
 
@@ -12,18 +11,26 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 	});
 	constructor(
 		scene: Scene,
-		position: Vector,
-		size: Vector,
 		readonly map: Phaser.Tilemaps.TilemapLayer,
 		readonly tileIndexClose: number,
 		readonly tileIndexOpen: number,
 		readonly player: Player,
 		readonly slimes: Phaser.Physics.Arcade.Group
 	) {
-		super(scene, position.x, position.y, 'none');
+		super(scene, 0, 0, 'none');
+		this.setX(
+			this.tiles.map(tile => tile.pixelX).reduce((sum, x) => sum + x) /
+				this.tiles.length +
+				scene.tileSize / 2
+		);
+		this.setY(
+			this.tiles.map(tile => tile.pixelY).reduce((sum, y) => sum + y) /
+				this.tiles.length +
+				scene.tileSize / 2
+		);
 		scene.physics.world.enable(this, Phaser.Physics.Arcade.STATIC_BODY);
 		scene.add.existing(this);
-		this.body.setSize(size.x, size.y);
+		this.body.setSize(this.tiles.length * scene.tileSize, scene.tileSize);
 		this.visible = false;
 		this.colliderPlayer = scene.physics.add.collider(player, this);
 		this.colliderJelly = scene.physics.add.collider(slimes, this);
