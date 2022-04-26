@@ -2,7 +2,7 @@ import Steering from '../ai/steerings/steering';
 
 import CharacterFactory from './character_factory';
 import { Wander } from '../ai/steerings/wander';
-import { GoInPoint } from '../ai/steerings/go-point';
+import { GoToPoint } from '../ai/steerings/go-point';
 import { Escape } from '../ai/steerings/escape';
 import { StateTable } from '../ai/behaviour/state';
 import Player from './player';
@@ -67,7 +67,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	protected steerings: Steering[] = [
 		new Wander(this, 1),
-		new GoInPoint(this, this.gate, 1),
+		new GoToPoint(this, this.gate, 1),
 		new Escape(this, this.player, 1),
 		new Escape(this, this.gate, 1),
 	];
@@ -80,7 +80,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	statePank: PunkStates = 'wander';
 
-	timeNow = 0;
+	timeNow = 501;
 
 	timeToEscape = 300;
 
@@ -101,6 +101,7 @@ export default class Punk extends Phaser.Physics.Arcade.Sprite {
 
 	hateAurora() {
 		this.statePank = 'moveOutAurora';
+		//console.log('Oh no, please!');
 	}
 
 	useSteering(index: number) {

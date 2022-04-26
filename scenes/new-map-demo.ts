@@ -1,6 +1,5 @@
 /// <reference path='./module_types.d.ts'/>
 import EasyStar from 'easystarjs';
-import Portal from '../src/characters/portal';
 
 import tilemapPng from '../assets/tileset/Green_Meadow_Tileset.png';
 import tilemapJson from '../assets/green_meadow.json';
@@ -11,7 +10,6 @@ import { Scene } from '../src/characters/scene';
 import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
 import Vector from '../src/utils/vector';
 import Fence from '../src/characters/fence';
-import Player from '../src/characters/player';
 
 type LayerDescription = {
 	depth?: number;
@@ -78,7 +76,6 @@ function setupFinder(
 
 export class NewMapScene extends Phaser.Scene implements Scene {
 	public readonly finder = new EasyStar.js();
-	gameObjects: Phaser.Physics.Arcade.Sprite[] = [];
 
 	tileSize = 36;
 	constructor() {
@@ -88,35 +85,9 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	width = 0;
 	height = 0;
 	characterFactory?: CharacterFactory;
-	fence!: Fence;
+
 	getSize() {
 		return Vector.create(this.width, this.height);
-	}
-
-	getPortal(pos: { x: number; y: number }): Portal | null {
-		let res = null;
-		this.gameObjects.forEach(e => {
-			if (!(e instanceof Portal)) return;
-			if (e.x == pos.x && e.y == pos.y) res = e;
-		});
-		return res;
-	}
-	getclosestPortal(pos: { x: number; y: number }): Portal | null {
-		const res: Portal[] = [];
-		this.gameObjects.forEach(e => {
-			if (e instanceof Portal) res.push(e);
-		});
-		if (res.length == 0) return null;
-
-		let p = res[0];
-		let d = Phaser.Math.Distance.BetweenPoints(pos, p);
-		res.forEach(e => {
-			const _d = Phaser.Math.Distance.BetweenPoints(pos, e);
-			if (_d >= d) return;
-			p = e;
-			d = _d;
-		});
-		return p;
 	}
 
 	preload() {
@@ -163,9 +134,21 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		);
 
 		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
-		this.gameObjects.push(player);
+		const fence = characterFactory.buildFence(
+			layers['Corral.Doors'],
+			1736,
+			1222
+		);
+
+		const positionCorral = Vector.create(1012, 225);
+		const sizeCorral = Vector.create(225, 150);
+
+		const corral = characterFactory.buildCorral(
+			positionCorral,
+			sizeCorral,
+			fence
+		);
 		// Создаем желешек
-		const slimes = this.physics.add.group();
 		const params: BuildSlimeOptions = { slimeType: 0 };
 		for (let i = 0; i < 20; i++) {
 			const x = Phaser.Math.RND.between(
@@ -185,26 +168,7 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 				outerArbitrator,
 				innerArbitrator
 			);
-
-			slimes.add(slime);
-			this.gameObjects.push(slime);
 		}
-		this.physics.add.collider(slimes, slimes);
-		this.physics.add.collider(player, slimes);
-
-		const positionFence = Vector.create(995, 305);
-		const sizeFence = Vector.create(62, 30);
-
-		this.fence = characterFactory.buildFence(positionFence, sizeFence);
-
-		const positionCorral = Vector.create(1012, 225);
-		const sizeCorral = Vector.create(225, 150);
-
-		const corral = characterFactory.buildCorral(
-			positionCorral,
-			sizeCorral,
-			this.fence
-		);
 
 		characterFactory.buildPunk(100, 200);
 		characterFactory.buildPunk(700, 350);

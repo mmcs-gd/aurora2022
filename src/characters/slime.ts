@@ -1,14 +1,15 @@
 import Phaser from 'phaser';
 import Vector2 = Phaser.Math.Vector2;
 import { Scene } from './scene';
-import { CellType, RawPortal } from '../ai/scouting_map/cells';
+import { CellType } from '../ai/scouting_map/cells';
 import { ScoutedMap } from '../ai/scouting_map/map';
 import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 import Steering from '../ai/steerings/steering';
-import { GoInPoint } from '../ai/steerings/go-point';
+import { GoToPoint } from '../ai/steerings/go-point';
 import { Wander } from '../ai/steerings/wander';
 import { Pursuit } from '../ai/steerings/pursuit';
 import Fence from './fence';
+import CharacterFactory from './character_factory';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
@@ -23,7 +24,8 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		readonly animations: string[],
 		public sightDistance: number,
 		readonly outerArbitrator: ArbitratorInstance,
-		readonly innerArbitrator: ArbitratorInstance
+		readonly innerArbitrator: ArbitratorInstance,
+		readonly factory: CharacterFactory
 	) {
 		super(scene, x, y, name, frame);
 		scene.physics.world.enable(this);
@@ -79,12 +81,12 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		const body = this.body as Phaser.Physics.Arcade.Body;
 		let imp;
 		// если желешка внутри загона и загон закрыт
-		if (this.scene.fence.isClosed && this.isInCorral()) {
+		if (this.factory.corral?.fence.isClosed && this.isInCorral()) {
 			this.currentTask = new WaitingTask(this);
 		} else if (this.isInCorral()) {
 			this.currentTask = new EscapeTask(
 				this,
-				this.scene.fence,
+				this.factory.corral!.fence,
 				this.innerArbitrator
 			);
 		}
@@ -120,7 +122,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		const now = this.scene.time.now;
 		for (let i = visionRectangle.left; i < visionRectangle.right; ++i) {
 			for (let j = visionRectangle.top; j < visionRectangle.bottom; ++j) {
-				const portal = this.scene.getPortal({ x, y });
+				const portal = this.factory.getPortal({ x, y });
 				this.scoutedMap.set(
 					portal
 						? {
@@ -219,7 +221,7 @@ export class WalkTask extends SlimeTask {
 			this.slime.addSteering(this.st);
 		}
 
-		const portal = this.slime.scene.getclosestPortal(this.slime);
+		const portal = this.slime.factory.getclosestPortal(this.slime);
 		if (portal == null) return false;
 		return (this.completed =
 			Phaser.Math.Distance.BetweenPoints(this.slime, portal) <= this.radius);
@@ -240,13 +242,13 @@ export class WalkTask extends SlimeTask {
  * supposed to be base class for go&interact tasks, therefore property radius stands for action distance
  */
 export class TargetSeekTask extends SlimeTask {
-	st: GoInPoint;
+	st: GoToPoint;
 	radius = 20;
 	target: { x: number; y: number };
 	constructor(slime: Slime, target: { x: number; y: number }) {
 		super(slime);
 		this.target = slime;
-		this.st = new GoInPoint(slime, target, 1);
+		this.st = new GoToPoint(slime, target, 1);
 	}
 	execute(): boolean {
 		if (this.slime.steerings.length === 0) {
@@ -275,7 +277,7 @@ export class ObjectSeekTask extends SlimeTask {
 	constructor(slime: Slime, target: Phaser.Physics.Arcade.Sprite) {
 		super(slime);
 		this.target = target;
-		this.st = new Pursuit(slime, target, 1, this.slime.speed, 0);
+		this.st = new Pursuit(slime, target, 1);
 	}
 	execute(): boolean {
 		if (this.completed) return true;
@@ -310,7 +312,7 @@ export class PortalSeekTask extends TargetSeekTask {
 	}
 
 	nextTask(): SlimeTask | null {
-		const portal = this.slime.scene.getPortal(this.target);
+		const portal = this.slime.factory.getPortal(this.target);
 		if (portal == null) return new WalkTask(this.slime);
 		// желе пытается залезть в лужу
 		// если желе пристроилось к луже, создает себе WaitingTask, иначе идет гулять (return null)

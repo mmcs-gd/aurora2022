@@ -44,6 +44,7 @@ export default class CharacterFactory {
 	player?: Player;
 	corral?: Corral;
 	readonly punks = new Array<Punk>();
+	readonly portals = new Array<Portal>();
 	constructor(public scene: Scene) {
 		cyberSpritesheets.forEach(element => {
 			this.animationLibrary[element] = new AnimationLoader(
@@ -131,6 +132,7 @@ export default class CharacterFactory {
 			this.player
 		);
 		this.addSprite(character);
+		this.punks.push(character);
 		return character;
 	}
 
@@ -145,6 +147,14 @@ export default class CharacterFactory {
 			maxSlime
 		);
 		this.addSprite(portal, false);
+		this.portals.push(portal);
+		portal.on('destroy', () => {
+			const i = this.portals.findIndex(entity => entity === portal);
+			if (i != -1) {
+				this.portals[i] = this.portals[this.portals.length - 1];
+				this.portals.pop();
+			}
+		});
 		return portal;
 	}
 
@@ -199,7 +209,8 @@ export default class CharacterFactory {
 			animations,
 			2,
 			outerArbitrator,
-			innerArbitrator
+			innerArbitrator,
+			this
 		);
 		this.addSprite(slime);
 		this.slimes.push(slime);
@@ -207,8 +218,8 @@ export default class CharacterFactory {
 		slime.on('destroy', () => {
 			const i = this.slimes.findIndex(entity => entity === slime);
 			if (i != -1) {
-				this.gameObjects[i] = this.gameObjects[this.gameObjects.length - 1];
-				this.gameObjects.pop();
+				this.slimes[i] = this.slimes[this.slimes.length - 1];
+				this.slimes.pop();
 			}
 		});
 		return slime;
@@ -231,17 +242,45 @@ export default class CharacterFactory {
 		return corral;
 	}
 
-	buildFence(position: Vector, size: Vector) {
+	buildFence(
+		tileLayer: Phaser.Tilemaps.TilemapLayer,
+		tileIndexClose: number,
+		tileIndexOpen: number
+	) {
 		if (!this.player) throw new Error(`Player should be created before fence!`);
 		const fence = new Fence(
 			this.scene,
-			position,
-			size,
+			tileLayer,
+			tileIndexClose,
+			tileIndexOpen,
 			this.player,
 			this.slimesGroup
 		);
 		this.addSprite(fence, false);
 		return fence;
+	}
+
+	getPortal(pos: { x: number; y: number }): Portal | null {
+		return (
+			this.portals.find(portal => {
+				return portal.x == pos.x && portal.y == pos.y;
+			}) || null
+		);
+	}
+
+	getclosestPortal(pos: { x: number; y: number }): Portal | null {
+		const res = this.portals;
+
+		let p = res[0];
+		if (!p) return null;
+		let d = Phaser.Math.Distance.BetweenPoints(pos, p);
+		res.forEach(e => {
+			const _d = Phaser.Math.Distance.BetweenPoints(pos, e);
+			if (_d >= d) return;
+			p = e;
+			d = _d;
+		});
+		return p;
 	}
 
 	slimeNumberToName(n: number): string {
