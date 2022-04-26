@@ -3,8 +3,6 @@ import Phaser from 'phaser';
 import { Flee } from './flee';
 import Vector2 = Phaser.Math.Vector2;
 import Sprite = Phaser.Physics.Arcade.Sprite;
-import { GoToPoint } from './go-point';
-import Player from '../../characters/player';
 
 export class Escape implements Steering {
 	constructor(
@@ -15,7 +13,6 @@ export class Escape implements Steering {
 
 	calculateImpulse() {
 		const pursuerDirection = this.pursuer.body.velocity;
-		const ownerDirection = (this.owner as Player).body.velocity;
 
 		const toPursuer = new Vector2(
 			this.pursuer.x - this.owner.x,
