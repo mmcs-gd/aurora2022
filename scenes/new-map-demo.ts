@@ -88,7 +88,14 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 	}
 
 	getPortal(tile: { x: number; y: number }): RawPortal | null {
-		return null;
+		return (
+			this.characterFactory?.portals
+				.find(portal => {
+					const portalTile = this.pixelsToTiles(portal);
+					return portalTile.x == tile.x && portalTile.y == tile.y;
+				})
+				?.raw() || null
+		);
 	}
 
 	preload() {

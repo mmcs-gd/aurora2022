@@ -49,4 +49,13 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 			} else this.timer += 1;
 		}
 	}
+
+	raw() {
+		return {
+			x: this.x,
+			y: this.y,
+			capacity: this.maxSlime,
+			count: this.currentSlime,
+		};
+	}
 }
