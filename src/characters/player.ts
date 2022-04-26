@@ -7,6 +7,16 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	nearestJelly?: Slime;
 	jellyInHands?: Slime;
 	radius = 60;
+	textAuroraScream?: Phaser.GameObjects.Text;
+
+	//Фразы надо придумать геймдизам и нарративщикам
+	variousPhrases: string[] = 
+	[
+		"Гуляй отсюда.",
+		"Это мои Желешки!!!!",
+		"Ты куда лезешь?",
+		"Крути педали, пока не дали..."
+	];
 
 	constructor(
 		scene: Scene,
@@ -184,11 +194,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 				const inRadius = distanceSqr <= this.radius * this.radius;
 				if (inRadius == false) continue;
 
+				this.textAuroraScream = this.scene.add.text(position.x,position.y, this.variousPhrases[Math.floor((Math.random() * this.variousPhrases.length))]);
+				const triggerTimer = this.scene.time.addEvent({
+					callback: this.timerEvent,
+					callbackScope: this,
+					delay: 3000, // 1000 = 1 second
+					loop: true
+				});
+
+				
 				factory.punks[i].hateAurora();
 				return;
 			}
 		});
 	}
+
+	public timerEvent(): void {
+        this.textAuroraScream?.destroy();
+    }
 
 	//Готовый метод уничтожения порталов, просто вставьте сюда функции уничтожения порталов, больше ничего не нужно.
 

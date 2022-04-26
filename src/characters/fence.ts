@@ -23,8 +23,6 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		this.visible = false;
 		this.colliderPlayer = scene.physics.add.collider(player, this);
 		this.colliderJelly = scene.physics.add.collider(slimes, this);
-		const map = scene.make.tilemap({ key: 'map' });
-		const tileset = map.addTilesetImage('Green_Meadow_Tileset', 'tiles');
 	}
 
 	closeFence() {
