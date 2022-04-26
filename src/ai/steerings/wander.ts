@@ -16,7 +16,9 @@ export class Wander implements Steering {
 		circleCenter.normalize();
 		circleCenter.scale(this.wanderDistance);
 
-		const displacement = new Vector2(0, -1);
+		const y = Math.round(Math.random());
+		console.log(y);
+		const displacement = new Vector2(0, y);
 		displacement.scale(this.wanderRadius);
 		displacement.setAngle(this.wanderAngle);
 
