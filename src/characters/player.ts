@@ -10,12 +10,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	textAuroraScream?: Phaser.GameObjects.Text;
 
 	//Фразы надо придумать геймдизам и нарративщикам
-	variousPhrases: string[] = 
-	[
-		"Гуляй отсюда.",
-		"Это мои Желешки!!!!",
-		"Ты куда лезешь?",
-		"Крути педали, пока не дали..."
+	variousPhrases: string[] = [
+		'Гуляй отсюда.',
+		'Это мои Желешки!!!!',
+		'Ты куда лезешь?',
+		'Крути педали, пока не дали...',
 	];
 
 	constructor(
@@ -120,7 +119,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	pickJelly() {
-		
 		this.scene.input.keyboard.on('keydown-Q', () => {
 			if (this.jellyInHands != undefined) {
 				this.jellyInHands.setActive(true);
@@ -138,7 +136,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	controlCorral() {
-		
 		this.scene.input.keyboard.on('keydown-T', () => {
 			const corral = this.factory.corral;
 			if (!corral) {
@@ -177,7 +174,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 					console.log('Punk not found!');
 					continue;
 				}
-				
+
 				const spriteOffset = Vector.create(15, 15);
 				const playerPosition = Vector.create(
 					this.x + spriteOffset.x,
@@ -188,21 +185,32 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 					factory.punks[i].body.position.y
 				);
 				const distanceSqr =
-					Math.pow(position.x + factory.punks[i].width / 2 - playerPosition.x, 2) +
-					Math.pow(position.y + factory.punks[i].height / 2 - playerPosition.y, 2);
+					Math.pow(
+						position.x + factory.punks[i].width / 2 - playerPosition.x,
+						2
+					) +
+					Math.pow(
+						position.y + factory.punks[i].height / 2 - playerPosition.y,
+						2
+					);
 
 				const inRadius = distanceSqr <= this.radius * this.radius;
 				if (inRadius == false) continue;
 
-				this.textAuroraScream = this.scene.add.text(position.x,position.y, this.variousPhrases[Math.floor((Math.random() * this.variousPhrases.length))]);
+				this.textAuroraScream = this.scene.add.text(
+					position.x,
+					position.y,
+					this.variousPhrases[
+						Math.floor(Math.random() * this.variousPhrases.length)
+					]
+				);
 				const triggerTimer = this.scene.time.addEvent({
 					callback: this.timerEvent,
 					callbackScope: this,
 					delay: 3000, // 1000 = 1 second
-					loop: true
+					loop: true,
 				});
 
-				
 				factory.punks[i].hateAurora();
 				return;
 			}
@@ -210,8 +218,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	public timerEvent(): void {
-        this.textAuroraScream?.destroy();
-    }
+		this.textAuroraScream?.destroy();
+	}
 
 	//Готовый метод уничтожения порталов, просто вставьте сюда функции уничтожения порталов, больше ничего не нужно.
 
@@ -223,7 +231,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	// 				console.log('Portal not found!');
 	// 				continue;
 	// 			}
-				
+
 	// 			const spriteOffset = Vector.create(15, 15);
 	// 			const playerPosition = Vector.create(
 	// 				this.x + spriteOffset.x,
