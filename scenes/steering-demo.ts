@@ -9,7 +9,6 @@ import CharacterFactory, {
 import Steering from '../src/ai/steerings/steering';
 import { Wander } from '../src/ai/steerings/wander';
 import { GoToPoint } from '../src/ai/steerings/go-point';
-import { RawPortal } from '../src/ai/scouting_map/cells';
 import Vector2 = Phaser.Math.Vector2;
 import DemoNPC from '../src/characters/demo-npc';
 import { Escape } from '../src/ai/steerings/escape';
@@ -133,10 +132,6 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 			Math.floor(pixels.x / this.tileSize),
 			Math.floor(pixels.y / this.tileSize)
 		);
-	}
-
-	getPortal(tile: { x: number; y: number }): RawPortal | null {
-		return null;
 	}
 
 	getSize() {

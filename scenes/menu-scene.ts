@@ -18,7 +18,23 @@ export class MainMenuScene extends Phaser.Scene {
 				color: '#FFFFFF',
 			})
 			.setFontSize(24);
+		this.add
+			.text(
+				400,
+				50,
+				`Controls:
 
+Moving:          Arrows
+Pick jelly:      Q
+Destoy potral:   R
+Open|Close gate: T
+Scream on punks: E
+			`,
+				{
+					color: '#FFFFFF',
+				}
+			)
+			.setFontSize(24);
 		Object.keys(this.game.scene.keys)
 			.filter(scene => !['default', this.scene.key].includes(scene))
 			.forEach((scene, i) => {

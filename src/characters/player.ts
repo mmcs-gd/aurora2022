@@ -98,6 +98,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			}
 		}
 	}
+	// костыльная но работающая проверка на нахождение в загоне
+	isInCorral() {
+		if (this.x > 912 && this.x < 1109.5 && this.y > 172.5 && this.y < 273.5) {
+			return true;
+		}
+		return false;
+	}
 
 	private updateNearestJelly() {
 		const spriteOffset = Vector.create(15, 15);

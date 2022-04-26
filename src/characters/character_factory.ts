@@ -7,6 +7,7 @@ import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import Fence from './fence';
 import DemoNPC from './demo-npc';
+import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import Punk from './punk';
 import Portal from './portal';
@@ -186,8 +187,14 @@ export default class CharacterFactory {
 		return character;
 	}
 
-	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
-		const speed = 40;
+	buildSlime(
+		x: number,
+		y: number,
+		{ slimeType = 0 }: BuildSlimeOptions,
+		outerArbitrator: ArbitratorInstance,
+		innerArbitrator: ArbitratorInstance
+	) {
+		const speed = 50;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationLibrary[slimeSpriteSheet].get(
 			this.slimeNumberToName(slimeType)
@@ -199,7 +206,11 @@ export default class CharacterFactory {
 			slimeSpriteSheet,
 			9 * slimeType,
 			speed,
-			animations
+			animations,
+			2,
+			outerArbitrator,
+			innerArbitrator,
+			this
 		);
 		this.addSprite(slime);
 		this.slimes.push(slime);
@@ -247,6 +258,29 @@ export default class CharacterFactory {
 		);
 		this.addSprite(fence, false);
 		return fence;
+	}
+
+	getPortal(pos: { x: number; y: number }): Portal | null {
+		return (
+			this.portals.find(portal => {
+				return portal.x == pos.x && portal.y == pos.y;
+			}) || null
+		);
+	}
+
+	getclosestPortal(pos: { x: number; y: number }): Portal | null {
+		const res = this.portals;
+
+		let p = res[0];
+		if (!p) return null;
+		let d = Phaser.Math.Distance.BetweenPoints(pos, p);
+		res.forEach(e => {
+			const _d = Phaser.Math.Distance.BetweenPoints(pos, e);
+			if (_d >= d) return;
+			p = e;
+			d = _d;
+		});
+		return p;
 	}
 
 	slimeNumberToName(n: number): string {

@@ -16,11 +16,10 @@ export class Wander implements Steering {
 		circleCenter.normalize();
 		circleCenter.scale(this.wanderDistance);
 
-		const displacement = new Vector2(0, -1);
+		const y = Math.round(Math.random());
+		const displacement = new Vector2(0, y);
 		displacement.scale(this.wanderRadius);
 		displacement.setAngle(this.wanderAngle);
-
-		Phaser.Math.RND.init;
 		this.wanderAngle += Phaser.Math.RND.normal() * this.angleChange;
 
 		return new Vector2(circleCenter.add(displacement).normalize());
