@@ -142,7 +142,13 @@ export class NewMapScene extends Phaser.Scene implements Scene {
 		const positionFence = Vector.create(995, 305);
 		const sizeFence = Vector.create(62, 30);
 
-		const fence = characterFactory.buildFence(positionFence, sizeFence);
+		const fence = characterFactory.buildFence(
+			positionFence,
+			sizeFence,
+			layers['Corral.Doors'],
+			1736,
+			1222
+		);
 
 		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);

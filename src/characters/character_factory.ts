@@ -232,12 +232,21 @@ export default class CharacterFactory {
 		return corral;
 	}
 
-	buildFence(position: Vector, size: Vector) {
+	buildFence(
+		position: Vector,
+		size: Vector,
+		tileLayer: Phaser.Tilemaps.TilemapLayer,
+		tileIndexClose: number,
+		tileIndexOpen: number
+	) {
 		if (!this.player) throw new Error(`Player should be created before fence!`);
 		const fence = new Fence(
 			this.scene,
 			position,
 			size,
+			tileLayer,
+			tileIndexClose,
+			tileIndexOpen,
 			this.player,
 			this.slimesGroup
 		);

@@ -7,12 +7,16 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 	auroraInCorral = false;
 	colliderPlayer: Phaser.Physics.Arcade.Collider;
 	colliderJelly: Phaser.Physics.Arcade.Collider;
-	map?: Phaser.Tilemaps.Tilemap;
-
+	tiles = this.map.filterTiles((tile: Phaser.Tilemaps.Tile) => {
+		return tile.index === this.tileIndexClose;
+	});
 	constructor(
 		scene: Scene,
 		position: Vector,
 		size: Vector,
+		readonly map: Phaser.Tilemaps.TilemapLayer,
+		readonly tileIndexClose: number,
+		readonly tileIndexOpen: number,
 		readonly player: Player,
 		readonly slimes: Phaser.Physics.Arcade.Group
 	) {
@@ -30,6 +34,7 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		this.colliderPlayer = _scene.physics.add.collider(this.player, this);
 		this.colliderJelly = _scene.physics.add.collider(this.slimes, this);
 		this.isClosed = true;
+		this.tiles.forEach(tile => (tile.index = this.tileIndexClose));
 	}
 
 	openFence() {
@@ -37,5 +42,6 @@ export default class Fence extends Phaser.Physics.Arcade.Sprite {
 		_scene.physics.world.removeCollider(this.colliderPlayer);
 		_scene.physics.world.removeCollider(this.colliderJelly);
 		this.isClosed = false;
+		this.tiles.forEach(tile => (tile.index = this.tileIndexOpen));
 	}
 }
