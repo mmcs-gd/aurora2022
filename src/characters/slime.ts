@@ -11,9 +11,11 @@ import { Pursuit } from '../ai/steerings/pursuit';
 import Fence from './fence';
 import CharacterFactory from './character_factory';
 import { ArbitratorCharacter } from './arbitrator';
+import Portal from './portal';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
+	public portal?: Portal;
 
 	constructor(
 		public scene: Scene,
@@ -314,6 +316,7 @@ export class ObjectSeekTask extends SlimeTask {
 export class PortalSeekTask extends TargetSeekTask {
 	constructor(slime: Slime, portal: { x: number; y: number }) {
 		super(slime, portal);
+		this.radius = Math.random() * 20 + 5;
 	}
 
 	nextTask(): SlimeTask | null {
