@@ -319,4 +319,8 @@ export default class CharacterFactory {
 	get currentSlimesCount(): number {
 		return this.slimes.length;
 	}
+
+	get slimesInCorralCount(): number {
+		return this.slimes.filter(slime => slime.isInCorral()).length;
+	}
 }

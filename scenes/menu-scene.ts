@@ -36,7 +36,10 @@ Scream on punks: E
 			)
 			.setFontSize(24);
 		Object.keys(this.game.scene.keys)
-			.filter(scene => !['default', this.scene.key].includes(scene))
+			.filter(
+				scene =>
+					!['default', this.scene.key, 'WinScene', 'LoseScene'].includes(scene)
+			)
 			.forEach((scene, i) => {
 				new MenuButton(this, 100, 100 + i * 75, scene, () =>
 					this.scene.start(scene)
@@ -49,7 +52,7 @@ const padding = 10;
 const minimumWidth = 200;
 const minimumHeight = 50;
 
-class MenuButton extends Phaser.GameObjects.Rectangle {
+export class MenuButton extends Phaser.GameObjects.Rectangle {
 	private label: Phaser.GameObjects.Text;
 
 	constructor(
