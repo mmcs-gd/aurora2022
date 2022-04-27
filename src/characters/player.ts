@@ -151,8 +151,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 	pickJelly() {
 		this.scene.input.keyboard.on('keydown-Q', () => {
-			if (this.jellyInHands != undefined) {
+			if (this.jellyInHands) {
 				this.jellyInHands.setActive(true);
+				this.jellyInHands.currentTask = this.jellyInHands.defaultTask();
 				this.jellyInHands = undefined;
 				return;
 			}
@@ -162,6 +163,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			if (!this.nearestJelly) return;
 
 			this.jellyInHands = this.nearestJelly;
+			if (this.jellyInHands.portal) {
+				this.jellyInHands.portal.deleteJelly(this.jellyInHands);
+			}
 			this.jellyInHands.setActive(false);
 		});
 	}

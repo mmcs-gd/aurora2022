@@ -15,7 +15,10 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 		scene.add.existing(this);
 	}
 	timer = 0;
-	count = 0;
+
+	get count(): number {
+		return this.slimes.length;
+	}
 
 	slimes: Slime[] = [];
 
@@ -23,7 +26,7 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 		if (this.count < this.capacity) {
 			console.log(`Add slime ${this.count + 1}/${this.capacity}`);
 			this.slimes.push(input);
-			this.count += 1;
+			input.portal = this;
 			return true;
 		}
 		return false;
@@ -34,6 +37,10 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 			element.destroy();
 		});
 		this.destroy();
+	}
+
+	deleteJelly(jelly: Slime) {
+		this.slimes = this.slimes.filter(it => it != jelly);
 	}
 
 	update() {

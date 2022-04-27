@@ -11,9 +11,11 @@ import { Pursuit } from '../ai/steerings/pursuit';
 import Fence from './fence';
 import CharacterFactory from './character_factory';
 import { ArbitratorCharacter } from './arbitrator';
+import Portal from './portal';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
+	public portal?: Portal;
 
 	constructor(
 		public scene: Scene,
