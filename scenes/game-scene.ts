@@ -178,6 +178,18 @@ export class GameScene extends Phaser.Scene implements Scene {
 
 	update() {
 		if (this.characterFactory) {
+			if (
+				this.characterFactory.currentSlimesCount <=
+				this.characterFactory.slimeMax * 0.5
+			) {
+				this.scene.start('LoseScene');
+			}
+			const inCorral = this.characterFactory.slimes.filter(slime =>
+				slime.isInCorral()
+			).length;
+			if (inCorral === this.characterFactory.currentSlimesCount) {
+				this.scene.start('WinScene');
+			}
 			this.characterFactory.gameObjects.forEach(function (element) {
 				element.update();
 			});

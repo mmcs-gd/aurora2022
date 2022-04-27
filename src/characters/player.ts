@@ -121,7 +121,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	private updateText(current: number, total: number) {
-		this.textSlimeCount.setText(`${current}/${total}`);
+		this.textSlimeCount.setText(
+			`${this.factory.slimesInCorralCount}/${current}/${total}`
+		);
 	}
 
 	private updateNearestJelly() {
