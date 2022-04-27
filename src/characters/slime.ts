@@ -10,6 +10,7 @@ import { Wander } from '../ai/steerings/wander';
 import { Pursuit } from '../ai/steerings/pursuit';
 import Fence from './fence';
 import CharacterFactory from './character_factory';
+import { ArbitratorCharacter } from './arbitrator';
 
 export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	readonly scoutedMap = new ScoutedMap();
@@ -23,8 +24,6 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		public speed: number,
 		readonly animations: string[],
 		public sightDistance: number,
-		readonly outerArbitrator: ArbitratorInstance,
-		readonly innerArbitrator: ArbitratorInstance,
 		readonly factory: CharacterFactory
 	) {
 		super(scene, x, y, name, frame);
@@ -60,7 +59,7 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 	 * used to enable slime activity when placed in Zagonsterlitz to escape
 	 * @param gate escape point with pass state
 	 */
-	trap(fence: Fence, arbitrator: ArbitratorInstance) {
+	trap(fence: Fence, arbitrator: ArbitratorCharacter) {
 		arbitrator.visitedBySlime(this);
 		this.currentTask = new EscapeTask(this, fence, arbitrator);
 	}
@@ -86,10 +85,13 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		} else if (this.isInCorral()) {
 			this.currentTask = new EscapeTask(
 				this,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				this.factory.corral!.fence,
-				this.innerArbitrator
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				this.factory.innerArbitrator!
 			);
 		}
+		body.velocity.normalize();
 		this.steerings.forEach(st => {
 			imp = st.calculateImpulse();
 			body.velocity.x += imp.x * st.force;
@@ -106,33 +108,38 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 		this.updateScouted();
 
 		if (!this.currentTask?.execute()) return;
-		const nextTask = this.currentTask.nextTask();
-		this.currentTask = nextTask == null ? this.defaultTask() : nextTask;
+		const nextTask = this.currentTask.nextTask() || this.defaultTask();
+		// console.log(`Change task from ${this.currentTask.constructor.name} to ${nextTask.constructor.name}`)
+		this.currentTask = nextTask;
 	}
 
 	updateScouted() {
-		const { x, y } = this.scene.pixelsToTiles({ x: this.x, y: this.y });
-		const halfSight = this.sightDistance / 2;
+		const { x, y } = this.scene.pixelsToTiles(this);
 		const visionRectangle = new Phaser.Geom.Rectangle(
-			x - halfSight,
-			y - halfSight,
-			this.sightDistance,
-			this.sightDistance
+			x - this.sightDistance,
+			y - this.sightDistance,
+			this.sightDistance * 2,
+			this.sightDistance * 2
 		);
 		const now = this.scene.time.now;
 		for (let i = visionRectangle.left; i < visionRectangle.right; ++i) {
 			for (let j = visionRectangle.top; j < visionRectangle.bottom; ++j) {
-				const portal = this.factory.getPortal({ x, y });
+				const currentX = x + i;
+				const currentY = y + i;
+				const portal = this.factory.getPortal({ x: currentX, y: currentY });
 				this.scoutedMap.set(
 					portal
 						? {
-								...portal,
+								x: currentX,
+								y: currentY,
 								type: CellType.Portal,
 								timestamp: now,
+								capacity: portal.capacity,
+								count: portal.count,
 						  }
 						: {
-								x: x,
-								y: y,
+								x: currentX,
+								y: currentY,
 								type: CellType.Empty,
 								timestamp: now,
 						  }
@@ -147,11 +154,11 @@ export default class Slime extends Phaser.Physics.Arcade.Sprite {
 
 	arbitratorInteract(arbitrator: ArbitratorInstance) {
 		arbitrator.visitedBySlime(this);
-		const targ = arbitrator.getTarget();
+		const target = arbitrator.getTarget();
 		this.currentTask =
-			targ == null
+			target == null
 				? this.defaultTask()
-				: new TargetSeekTask(this, new Vector2(targ.x, targ.y));
+				: new TargetSeekTask(this, new Vector2(target.x, target.y));
 	}
 }
 
@@ -221,7 +228,7 @@ export class WalkTask extends SlimeTask {
 			this.slime.addSteering(this.st);
 		}
 
-		const portal = this.slime.factory.getclosestPortal(this.slime);
+		const portal = this.slime.factory.getClosestPortal(this.slime);
 		if (portal == null) return false;
 		return (this.completed =
 			Phaser.Math.Distance.BetweenPoints(this.slime, portal) <= this.radius);
@@ -229,8 +236,8 @@ export class WalkTask extends SlimeTask {
 	nextTask(): SlimeTask | null {
 		return new ArbitratorSeekTask(
 			this.slime,
-			this.slime.outerArbitrator.location,
-			this.slime.outerArbitrator
+			// TODO: вернуть ближайшего, если их будет несколько
+			this.slime.factory.outerArbitrator[0]
 		);
 	}
 }
@@ -243,11 +250,9 @@ export class WalkTask extends SlimeTask {
  */
 export class TargetSeekTask extends SlimeTask {
 	st: GoToPoint;
-	radius = 20;
-	target: { x: number; y: number };
-	constructor(slime: Slime, target: { x: number; y: number }) {
+	radius = 36 * 2;
+	constructor(slime: Slime, public target: { x: number; y: number }) {
 		super(slime);
-		this.target = slime;
 		this.st = new GoToPoint(slime, target, 1);
 	}
 	execute(): boolean {
@@ -312,11 +317,19 @@ export class PortalSeekTask extends TargetSeekTask {
 	}
 
 	nextTask(): SlimeTask | null {
-		const portal = this.slime.factory.getPortal(this.target);
+		const portal = this.slime.factory.getPortal(
+			this.slime.scene.pixelsToTiles(this.target)
+		);
 		if (portal == null) return new WalkTask(this.slime);
-		// желе пытается залезть в лужу
-		// если желе пристроилось к луже, создает себе WaitingTask, иначе идет гулять (return null)
-		return new WaitingTask(this.slime);
+		if (portal.addSlime(this.slime))
+			// желе пытается залезть в лужу
+			// если желе пристроилось к луже, создает себе WaitingTask, иначе идет гулять (return null)
+			return new WaitingTask(this.slime);
+		return new ArbitratorSeekTask(
+			this.slime,
+			// TODO: вернуть ближайшего, если их будет несколько
+			this.slime.factory.outerArbitrator[0]
+		);
 	}
 }
 /**
@@ -327,22 +340,22 @@ export class PortalSeekTask extends TargetSeekTask {
  * specifies next task as PortalSeekTask if arbitrator have such target or WalkTask if no target
  */
 export class EscapeTask extends TargetSeekTask {
-	arbitrator: ArbitratorInstance;
-	fence: Fence;
-	constructor(slime: Slime, fence: Fence, arbitrator: ArbitratorInstance) {
+	constructor(
+		slime: Slime,
+		private fence: Fence,
+		private arbitrator: ArbitratorCharacter
+	) {
 		super(slime, fence);
-		this.fence = fence;
-		this.arbitrator = arbitrator;
 	}
 	execute(): boolean {
 		return super.execute();
 	}
 	nextTask(): SlimeTask | null {
-		const targ = this.arbitrator.getTarget();
-		if (targ === null) {
+		const target = this.arbitrator.getTarget();
+		if (target === null) {
 			return new WalkTask(this.slime);
 		} else {
-			return new PortalSeekTask(this.slime, targ);
+			return new PortalSeekTask(this.slime, target);
 		}
 	}
 }
@@ -355,22 +368,17 @@ export class EscapeTask extends TargetSeekTask {
  * species next task as PortalSeekTask if arbitrator have such target or WalkTask if no target
  */
 export class ArbitratorSeekTask extends TargetSeekTask {
-	arbitrator: ArbitratorInstance;
-	constructor(
-		slime: Slime,
-		target: { x: number; y: number },
-		arbitrator: ArbitratorInstance
-	) {
-		super(slime, target);
-		this.arbitrator = arbitrator;
+	constructor(slime: Slime, private arbitrator: ArbitratorCharacter) {
+		super(slime, arbitrator.location);
 	}
+
 	nextTask(): SlimeTask | null {
 		this.arbitrator.visitedBySlime(this.slime);
-		const targ = this.arbitrator.getTarget();
-		if (targ === null) {
+		const target = this.arbitrator.getTarget();
+		if (target === null) {
 			return new WalkTask(this.slime);
 		} else {
-			return new TargetSeekTask(this.slime, new Vector2(targ.x, targ.y));
+			return new PortalSeekTask(this.slime, new Vector2(target.x, target.y));
 		}
 	}
 }

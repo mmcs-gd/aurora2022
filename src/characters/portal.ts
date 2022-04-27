@@ -21,6 +21,7 @@ export default class Portal extends Phaser.Physics.Arcade.Sprite {
 
 	addSlime(input: Slime) {
 		if (this.count < this.capacity) {
+			console.log(`Add slime ${this.count + 1}/${this.capacity}`);
 			this.slimes.push(input);
 			this.count += 1;
 			return true;
