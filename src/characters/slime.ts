@@ -314,6 +314,7 @@ export class ObjectSeekTask extends SlimeTask {
 export class PortalSeekTask extends TargetSeekTask {
 	constructor(slime: Slime, portal: { x: number; y: number }) {
 		super(slime, portal);
+		this.radius = Math.random() * 20 + 5;
 	}
 
 	nextTask(): SlimeTask | null {
