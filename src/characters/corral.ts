@@ -30,13 +30,9 @@ export default class Corral extends Phaser.Physics.Arcade.Sprite {
 			return;
 		}
 
-		const auroraOverlap = _scene.physics.add.overlap(
-			this,
-			this.player,
-			(o1, o2) => {
-				this.fence.auroraInCorral = true;
-			}
-		);
+		const auroraOverlap = _scene.physics.add.overlap(this, this.player, () => {
+			this.fence.auroraInCorral = true;
+		});
 
 		auroraOverlap.update();
 	}

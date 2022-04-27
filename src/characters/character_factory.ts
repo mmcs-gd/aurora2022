@@ -7,12 +7,13 @@ import AnimationLoader from '../utils/animation-loader';
 import { Scene } from './scene';
 import Fence from './fence';
 import DemoNPC from './demo-npc';
-import { ArbitratorInstance } from '../ai/behaviour/arbitrator';
+import { Arbitrator } from '../ai/behaviour/arbitrator';
 import Sprite = Phaser.Physics.Arcade.Sprite;
 import Punk from './punk';
 import Portal from './portal';
 import Seed from './seed';
 import Vector from '../utils/vector';
+import { ArbitratorCharacter } from './arbitrator';
 
 export interface BuildSlimeOptions {
 	slimeType?: number;
@@ -43,6 +44,9 @@ export default class CharacterFactory {
 	readonly dynamicGroup: Phaser.Physics.Arcade.Group;
 	player?: Player;
 	corral?: Corral;
+	innerArbitrator?: ArbitratorCharacter;
+	outerArbitrator = new Array<ArbitratorCharacter>();
+
 	readonly punks = new Array<Punk>();
 	readonly portals = new Array<Portal>();
 	constructor(public scene: Scene) {
@@ -70,8 +74,8 @@ export default class CharacterFactory {
 		depth: DepthLayers = dynamic ? DepthLayers.Characters : DepthLayers.Stuff
 	) {
 		if (dynamic) {
-			sprite.setCollideWorldBounds(true);
 			this.dynamicGroup.add(sprite);
+			sprite.setCollideWorldBounds(true);
 		}
 		sprite.setDepth(depth);
 		this.gameObjects.push(sprite);
@@ -83,6 +87,24 @@ export default class CharacterFactory {
 			}
 		});
 		return sprite;
+	}
+
+	buildInnerArbitrator(
+		tile: { x: number; y: number },
+		soul: Arbitrator
+	): ArbitratorCharacter {
+		const arbitrator = new ArbitratorCharacter(this.scene, tile, soul);
+		this.innerArbitrator = arbitrator;
+		return arbitrator;
+	}
+
+	buildOuterArbitrator(
+		tile: { x: number; y: number },
+		soul: Arbitrator
+	): ArbitratorCharacter {
+		const arbitrator = new ArbitratorCharacter(this.scene, tile, soul);
+		this.outerArbitrator.push(arbitrator);
+		return arbitrator;
 	}
 
 	buildPlayerCharacter(
@@ -187,13 +209,7 @@ export default class CharacterFactory {
 		return character;
 	}
 
-	buildSlime(
-		x: number,
-		y: number,
-		{ slimeType = 0 }: BuildSlimeOptions,
-		outerArbitrator: ArbitratorInstance,
-		innerArbitrator: ArbitratorInstance
-	) {
+	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
 		const speed = 50;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationLibrary[slimeSpriteSheet].get(
@@ -208,11 +224,8 @@ export default class CharacterFactory {
 			speed,
 			animations,
 			2,
-			outerArbitrator,
-			innerArbitrator,
 			this
 		);
-		this.addSprite(slime);
 		this.slimes.push(slime);
 		this.slimesGroup.add(slime);
 		slime.on('destroy', () => {
@@ -222,6 +235,7 @@ export default class CharacterFactory {
 				this.slimes.pop();
 			}
 		});
+		this.addSprite(slime);
 		return slime;
 	}
 
@@ -260,15 +274,16 @@ export default class CharacterFactory {
 		return fence;
 	}
 
-	getPortal(pos: { x: number; y: number }): Portal | null {
+	getPortal(tile: { x: number; y: number }): Portal | null {
 		return (
 			this.portals.find(portal => {
-				return portal.x == pos.x && portal.y == pos.y;
+				const { x, y } = this.scene.pixelsToTiles(portal);
+				return x == tile.x && y == tile.y;
 			}) || null
 		);
 	}
 
-	getclosestPortal(pos: { x: number; y: number }): Portal | null {
+	getClosestPortal(pos: { x: number; y: number }): Portal | null {
 		const res = this.portals;
 
 		let p = res[0];

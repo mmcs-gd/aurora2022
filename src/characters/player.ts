@@ -6,7 +6,7 @@ import Slime from './slime';
 export default class Player extends Phaser.Physics.Arcade.Sprite {
 	nearestJelly?: Slime;
 	jellyInHands?: Slime;
-	radius = 60;
+	radius = 90;
 	textAuroraScream?: Phaser.GameObjects.Text;
 	screamTimer?: Phaser.Time.TimerEvent;
 	//Фразы надо придумать геймдизам и нарративщикам
@@ -78,6 +78,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		}
 	}
 	updateAnimation() {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationSets.get('Walk')!;
 		const animsController = this.anims;
 		const x = this.body.velocity.x;
@@ -114,6 +115,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			this.y + spriteOffset.y
 		);
 		const factory = this.factory;
+		this.nearestJelly = undefined;
 		for (let i = 0; i < factory.slimes.length; i++) {
 			const position = Vector.create(
 				factory.slimes[i].body.position.x,
@@ -140,7 +142,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
 			this.updateNearestJelly();
 
-			if (this.nearestJelly == null) return;
+			if (!this.nearestJelly) return;
 
 			this.jellyInHands = this.nearestJelly;
 			this.jellyInHands.setActive(false);

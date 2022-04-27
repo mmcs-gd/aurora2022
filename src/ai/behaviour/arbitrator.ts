@@ -38,7 +38,8 @@ export class ArbitratorInstance {
 	// Метрика для выбора портала
 	private metric(portal: ScoutedPortal): number {
 		const dist = this.distance(portal) + 1;
-		const full = Math.abs(1.5 - portal.count / portal.capacity);
+		const countCf = portal.count / portal.capacity + 0.5;
+		const full = countCf < 2 ? countCf : 0.1;
 		return full / dist;
 	}
 

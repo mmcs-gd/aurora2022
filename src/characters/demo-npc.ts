@@ -42,6 +42,7 @@ export default class DemoNPC extends Phaser.Physics.Arcade.Sprite {
 	}
 
 	updateAnimation() {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationSets.get('Walk')!;
 		const animsController = this.anims;
 		const x = this.body.velocity.x;

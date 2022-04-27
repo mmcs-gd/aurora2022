@@ -7,7 +7,7 @@ import CharacterFactory, {
 	BuildSlimeOptions,
 } from '../src/characters/character_factory';
 import { Scene } from '../src/characters/scene';
-import { Arbitrator, ArbitratorInstance } from '../src/ai/behaviour/arbitrator';
+import { Arbitrator } from '../src/ai/behaviour/arbitrator';
 import Vector from '../src/utils/vector';
 
 type LayerDescription = {
@@ -112,27 +112,26 @@ export class GameScene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		// Creating characters
-
 		const characterFactory = new CharacterFactory(this);
 		this.characterFactory = characterFactory;
+
 		// Создаем глобального арбитра
 		const arbitrator = new Arbitrator();
-		// Создаем локальных арбитров
-		// Координаты арбитров
-		const outerArbitratorCoords = { x: 496.7504208861624, y: 365.5 };
-		const innerArbitratorCoords = { x: 915, y: 200 };
-		// Инстансы арбитров
-		const outerArbitrator = new ArbitratorInstance(
-			arbitrator,
-			outerArbitratorCoords
+		const corralArbitratorTile = layers['Corral.Arbitrator'].findTile(
+			(tile: Phaser.Tilemaps.Tile) => tile.index > 0
+		);
+		const arbitratorTiles = layers.Arbitrator.filterTiles(
+			(tile: Phaser.Tilemaps.Tile) => tile.index > 0
+		);
+		characterFactory.buildInnerArbitrator(
+			{ x: corralArbitratorTile.x - 2, y: corralArbitratorTile.y },
+			arbitrator
+		);
+		arbitratorTiles.forEach(a =>
+			characterFactory.buildOuterArbitrator({ x: a.x - 2, y: a.y }, arbitrator)
 		);
 
-		const innerArbitrator = new ArbitratorInstance(
-			arbitrator,
-			innerArbitratorCoords
-		);
-
-		const player = characterFactory.buildPlayerCharacter('aurora', 800, 300);
+		characterFactory.buildPlayerCharacter('aurora', 800, 300);
 		const fence = characterFactory.buildFence(
 			layers['Corral.Doors'],
 			1736,
@@ -142,11 +141,7 @@ export class GameScene extends Phaser.Scene implements Scene {
 		const positionCorral = Vector.create(1012, 225);
 		const sizeCorral = Vector.create(225, 150);
 
-		const corral = characterFactory.buildCorral(
-			positionCorral,
-			sizeCorral,
-			fence
-		);
+		characterFactory.buildCorral(positionCorral, sizeCorral, fence);
 		// Создаем желешек
 		const params: BuildSlimeOptions = { slimeType: 0 };
 		for (let i = 0; i < 20; i++) {
@@ -159,19 +154,12 @@ export class GameScene extends Phaser.Scene implements Scene {
 				this.physics.world.bounds.height - 50
 			);
 			params.slimeType = Phaser.Math.RND.between(0, 4);
-
-			const slime = characterFactory.buildSlime(
-				x,
-				y,
-				params,
-				outerArbitrator,
-				innerArbitrator
-			);
+			characterFactory.buildSlime(x, y, params);
 		}
 
 		characterFactory.buildPunk(100, 200);
-		characterFactory.buildPunk(700, 350);
-		this.input.keyboard.on('keydown-D', () => {
+		characterFactory.buildPunk(200, 350);
+		this.input.keyboard.once('keydown-P', () => {
 			// Turn on physics debugging to show player's hitbox
 			this.physics.world.createDebugGraphic();
 
@@ -182,10 +170,10 @@ export class GameScene extends Phaser.Scene implements Scene {
 			layers[layerID].setCollisionBetween(1, 5000);
 			this.physics.add.collider(characterFactory.dynamicGroup, layers[layerID]);
 		});
-		this.physics.add.collider(
-			characterFactory.dynamicGroup,
-			characterFactory.dynamicGroup
-		);
+		// this.physics.add.collider(
+		// characterFactory.dynamicGroup,
+		// characterFactory.dynamicGroup
+		// );
 	}
 
 	update() {
