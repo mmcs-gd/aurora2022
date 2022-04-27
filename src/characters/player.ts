@@ -8,7 +8,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 	jellyInHands?: Slime;
 	radius = 90;
 	textAuroraScream?: Phaser.GameObjects.Text;
+	textSlimeCount: Phaser.GameObjects.Text;
 	screamTimer?: Phaser.Time.TimerEvent;
+	camera: Phaser.Cameras.Scene2D.Camera;
 	//Фразы надо придумать геймдизам и нарративщикам
 	variousPhrases: string[] = [
 		'Гуляй отсюда.',
@@ -38,11 +40,15 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		const size = scene.getSize();
 		camera.setBounds(0, 0, size.x, size.y);
 		camera.startFollow(this);
+		this.camera = camera;
 
 		this.pickJelly();
 		this.controlCorral();
 		this.scarePunk();
 		this.destroyPortal(); // Ниже описан метод - нет порталов, не работает метод. Нужен на факторке.
+
+		this.textSlimeCount = this.scene.add.text(0.0, 0.0, '');
+		this.textSlimeCount.setDepth(10);
 	}
 
 	update() {
@@ -76,6 +82,13 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			this.textAuroraScream.x = this.x;
 			this.textAuroraScream.y = this.y;
 		}
+
+		this.textSlimeCount.x =
+			this.camera.midPoint.x - this.camera.displayWidth / 2;
+		this.textSlimeCount.y =
+			this.camera.midPoint.y - this.camera.displayHeight / 2;
+		this.updateText(this.factory.currentSlimesCount, this.factory.slimeMax);
+		// console.log(this.camera);
 	}
 	updateAnimation() {
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -105,6 +118,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			return true;
 		}
 		return false;
+	}
+
+	private updateText(current: number, total: number) {
+		this.textSlimeCount.setText(`${current}/${total}`);
 	}
 
 	private updateNearestJelly() {

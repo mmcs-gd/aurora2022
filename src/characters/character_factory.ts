@@ -46,6 +46,7 @@ export default class CharacterFactory {
 	corral?: Corral;
 	innerArbitrator?: ArbitratorCharacter;
 	outerArbitrator = new Array<ArbitratorCharacter>();
+	slimeMax = 0;
 
 	readonly punks = new Array<Punk>();
 	readonly portals = new Array<Portal>();
@@ -210,6 +211,7 @@ export default class CharacterFactory {
 	}
 
 	buildSlime(x: number, y: number, { slimeType = 0 }: BuildSlimeOptions) {
+		this.slimeMax += 1;
 		const speed = 50;
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const animations = this.animationLibrary[slimeSpriteSheet].get(
@@ -312,5 +314,9 @@ export default class CharacterFactory {
 				return 'Violet';
 		}
 		throw new Error(`Unknown slime with number ${n}`);
+	}
+
+	get currentSlimesCount(): number {
+		return this.slimes.length;
 	}
 }
