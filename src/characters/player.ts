@@ -35,7 +35,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		scene.add.existing(this);
 
 		const camera = scene.cameras.main;
-		camera.zoom = 1.5; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
+		camera.zoom = 0.8; // если нужно приблизить камеру к авроре, чтобы увидеть перемещение камеры
 		camera.useBounds = true;
 		const size = scene.getSize();
 		camera.setBounds(0, 0, size.x, size.y);
@@ -46,6 +46,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 		this.controlCorral();
 		this.scarePunk();
 		this.destroyPortal(); // Ниже описан метод - нет порталов, не работает метод. Нужен на факторке.
+		this.zoomDown();
+		this.zoomUp();
 
 		this.textSlimeCount = this.scene.add.text(0.0, 0.0, '');
 		this.textSlimeCount.setDepth(10);
@@ -171,6 +173,21 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 			this.jellyInHands.setActive(false);
 		});
 	}
+
+	zoomUp() {
+		this.scene.input.keyboard.on('keydown-B', () => {
+			const camera = this.scene.cameras.main;
+			camera.zoom += 0.01;
+		});
+	}
+
+	zoomDown() {
+		this.scene.input.keyboard.on('keydown-N', () => {
+			const camera = this.scene.cameras.main;
+			camera.zoom -= 0.01;
+		});
+	}
+
 
 	controlCorral() {
 		this.scene.input.keyboard.on('keydown-T', () => {
