@@ -123,34 +123,27 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 				buffer_grid[i][j] = grid[i][j];
 			}
 		}
-
-		for (var i = 0; i < grid.length; i++) {
-			for (var j = 0; j < grid[i].length; j++) {
+		console.log("erode:")
+		console.log(buffer_grid);
+		for (var i = 0; i < buffer_grid.length; i++) {
+			for (var j = 0; j < buffer_grid.length; j++) {
 				if (grid[i][j] == 0) {
-					if(i!=0)
+					if(i>0)
 					{
 						buffer_grid[i-1][j]=0;
 					}
-					if(i!=grid.length)
+					if(i<buffer_grid.length)
 					{
 						buffer_grid[i+1][j]=0;
 					}
-					if(j!=0)
+					if(j>0)
 					{
 						buffer_grid[i][j-1]=0;
 					}
-					if(j!=grid.length)
+					if(j<buffer_grid.length)
 					{
 						buffer_grid[i][j+1]=0;
 					}
-
-					/*for (let neighbourX = i - 1; neighbourX <= i + 1; neighbourX++) {
-						for (let neighbourY = j - 1; neighbourY <= j + 1; neighbourY++) {
-							if (neighbourX >= 0 && neighbourY >= 0 && neighbourX < grid.length && neighbourY < grid[0].length) {
-								buffer_grid[neighbourX][neighbourY] = 1;
-							}
-						}
-					}*/
 				}
 			}
 		}
@@ -163,9 +156,9 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 	{
 		var label_grid: number[][] = [];
 		var number_region=1;
-		for (let i: number = 0; i < grid.length; i++) {
+		for (var i: number = 0; i < grid.length; i++) {
 			label_grid[i] = [];
-			for (let j: number = 0; j < grid[i].length; j++) {
+			for (var j: number = 0; j < grid[i].length; j++) {
 				label_grid[i][j] = 0;
 			}
 		}
@@ -174,22 +167,23 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 			for (var j = 0; j < grid[i].length; j++){
 				if(grid[i][j]==0){
 					var k=0;
-					if(i!=0 && label_grid[i-1][j]!=0)
+					//console.log("I: "+i+" J: "+j+" var : " + label_grid[i][j]);
+					if(i>0 && label_grid[i-1][j]>0)
 					{
 						label_grid[i][j]=label_grid[i-1][j];
 						k++;
 					}
-					if(i!=grid.length && label_grid[i+1][j]!=0)
+					if(i<grid.length-1 && label_grid[i+1][j]>0)
 					{
 						label_grid[i][j]=label_grid[i+1][j];
 						k++;
 					}
-					if(j!=0 && label_grid[i][j-1]!=0)
+					if(j>0 && label_grid[i][j-1]>0)
 					{
 						label_grid[i][j]=label_grid[i][j-1];
 						k++;
 					}
-					if(j!= grid[i].length && label_grid[i][j+1]!=0)
+					if(j< grid[i].length-1 && label_grid[i][j+1]>0)
 					{
 						label_grid[i][j]=label_grid[i][j+1];
 						k++;
@@ -231,7 +225,7 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 
 	remove_region_labeling(grid: number[][])
 	{
-		let buffer_grid: number[][] = [];
+		var buffer_grid: number[][] = [];
 	
 		for (let i: number = 0; i < grid.length; i++) {
 			buffer_grid[i] = [];
@@ -239,12 +233,14 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 				buffer_grid[i][j] = grid[i][j];
 			}
 		}
+
+
 		for (var i = 0; i < buffer_grid.length; i++) 
 		for (var j = 0; j < buffer_grid[i].length; j++){
 			if(buffer_grid[i][j]>0){
-				buffer_grid[i][j]=1;
+				buffer_grid[i][j]=0;
 			}
-			else buffer_grid[i][j]=0;
+			else buffer_grid[i][j]=1;
 		}
 
 		
@@ -255,7 +251,7 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 		var regionAndCountTile: number[][] = [];
 		var counter=0;
 		var flag=false;
-		for (var i: number = 0; i < 10; i++) {
+		for (var i: number = 0; i < 100; i++) {
 			regionAndCountTile[i] = [];
 			regionAndCountTile[i][0] = -1;
 			regionAndCountTile[i][1] = 1;
@@ -264,7 +260,7 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 			for (var j: number = 0; j < grid[i].length; j++) {
 				flag=false;
 				if(grid[i][j]!=0){
-					for (var k=0;k<10;k++)
+					for (var k=0;k<100;k++)
 					{
 						if(grid[i][j]==regionAndCountTile[k][0])
 						{	regionAndCountTile[k][1]++;
@@ -300,7 +296,8 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 		var localY=startY;
 		buffer_grid[localX][localY]=0;
 		var counter=1;
-		while(localX!=endY && localY!=endY)
+		console.log("1 "+"localX: "+localX+" LocalY: "+localY);
+		do
 		{
 			var distanceTile=this.distance(localX,localY,endX,endY)
 			if(this.distance(localX+1,localY,endX,endY)<distanceTile)
@@ -335,24 +332,64 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 				distanceTile=this.distance(localX,localY,endX,endY);
 				counter++;
 			}	
-		}
+			console.log("localX: "+localX+" LocalY: "+localY);
+		}while(localX!=endX || localY!=endY)
 		console.log(buffer_grid);
 		for (var i = 0; i < buffer_grid.length; i++) 
 		for (var j = 0; j < buffer_grid[i].length; j++){
-			if(buffer_grid[i][j]!=-1)
+			if(buffer_grid[i][j]!=-1&& grid[i][j]==0)
 			{
 				label_grid[i][j]=10;
 			}
 		}
 		console.log(label_grid);
-
 		return label_grid;
 	}
 
+
+	
 	distance(startX:number,startY:number,endX:number,endY:number)
 	{
 		var distance=Math.abs(endX-startX)+Math.abs(endY-startY);
 		return distance;
+	}
+
+	finding_points_for_bridge(region:number, countTile:number)
+	{
+		var random=Math.floor((Math.random() *countTile));
+		return random;  
+	}
+
+	save_color_regions(grid:number[][],regionColor:number[][])
+	{	
+		for (var i = 0; i <grid.length; i++)
+		{ 
+			regionColor[i] = [];
+			for (var j = 0; j < grid[i].length; j++)
+			{
+				regionColor[i][j]=grid[i][j];
+			}
+		}
+	}
+
+	load_color_regions(grid:number[][],regionColor:number[][])
+	{
+		for (var i = 0; i <grid.length; i++)
+		{ 
+			for (var j = 0; j < grid[i].length; j++)
+			{
+				if(regionColor[i][j]>0)
+				{
+					grid[i][j]=regionColor[i][j];
+				}
+				if(regionColor[i][j]==0 && grid[i][j]!=0)
+				{
+					grid[i][j]=150;
+				}
+			}
+		}
+		console.log("grid");
+		console.log(grid);
 	}
 
 	create() {
@@ -380,6 +417,7 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 		this.physics.world.bounds.height = map.heightInPixels;
 
 		var things: number[][] = [];
+		var regionColor:number[][]=[];
 
 		for (var i: number = 0; i < map.width; i++) {
 			things[i] = [];
@@ -419,49 +457,87 @@ export class Laba4Scene extends Phaser.Scene implements Scene {
 
 		this.input.keyboard.on('keydown-D', () => {
 			things = this.dilate(things);
+			console.log("dilate");
+			console.log(things);
 			layer.putTilesAt(things, 0, 0);
 		});
 
 
 		this.input.keyboard.on('keydown-A', () => {
 			things = this.region_labeling(things);
-			console.log("Это работает");
-			console.log(things);
 			layer.putTilesAt(things,0,0);
-					layer.replaceByIndex(0,100);
+					layer.replaceByIndex(0,1612);
 					for(var i=11;i<99;i++)
 					{
 						var t=Math.floor(Math.random()*10)+1
 						layer.replaceByIndex(i,t);
 					}
 		});
+		
+		
 
+
+
+		
 
 		this.input.keyboard.on('keydown-Q', () => {
-			//things = this.remove_region_labeling(things);
-			var region=this.enumeration_of_regions(things);
-			
-			var random=Math.floor(Math.random()*6)+1;
-			var countRegion=0;
-			for(var i=0;i<region.length;i++)
+
+			var countRegion=10;
+			things=this.region_labeling(things);
+			this.save_color_regions(things,regionColor);
+			things=this.remove_region_labeling(things);
+			while(countRegion!=1)
 			{
-				if(region[i][0]!=-1)
-				countRegion++;
+				things = this.region_labeling(things);
+				var region=this.enumeration_of_regions(things);
+					countRegion=0;
+					for(var i=0;i<region.length;i++)
+					{
+						if(region[i][0]!=-1)
+						countRegion++;
+					}
+					if(countRegion!=1)
+					{
+						var dot1=this.finding_points_for_bridge(region[0][0],region[0][1]);
+						var dot2=this.finding_points_for_bridge(region[1][0],region[1][1]);
+						
+						var counterDot1=0;
+						var counterDot2=0;
+						var startX=0;
+						var startY=0;
+						var endX=0;
+						var endY=0;
+						for (var i = 0; i < things.length; i++) 
+						for (var j = 0; j < things[i].length; j++){
+							if(things[i][j]==region[0][0])
+							counterDot1++;
+							if(things[i][j]==region[1][0])
+							counterDot2++;
+							if(counterDot1==dot1)
+							{
+								startX=i;
+								startY=j;
+							}
+							if(counterDot2==dot2)
+							{
+								endX=i;
+								endY=j;
+							}
+						}
+						things=this.create_bridge(things,startX,startY,endX,endY);
+						things=this.remove_region_labeling(things);
+				 	}
+					
 			}
-			var random=Math.floor(Math.random()*countRegion);
-			for(var i=0;i<random;i++){
+				this.load_color_regions(things,regionColor);
 				
-				things=this.create_bridge(things,10,10,20,20);
-			}
-			layer.putTilesAt(things,0,0);
-			layer.replaceByIndex(0,100);
+					layer.putTilesAt(things,0,0);
+					layer.replaceByIndex(0,100);
 					for(var i=11;i<99;i++)
 					{
 						var t=Math.floor(Math.random()*10)+1
 						layer.replaceByIndex(i,t);
 					}
-			//console.log("Также");
-			//console.log(things);
 		});
 		
 

@@ -99,11 +99,11 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 
 		this.physics.add.collider(npcGroup, player);
 		this.physics.add.collider(npcGroup, npcGroup);
-		this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
-			if (!(player instanceof Phaser.Physics.Arcade.Sprite)) return;
-			if (!(obstacle instanceof Phaser.Tilemaps.Tile)) return;
-			avoidObstacles(this.tileSize, player, obstacle);
-		});
+		//this.physics.add.collider(npcGroup, worldLayer, (player, obstacle) => {
+		//	if (!(player instanceof Phaser.Physics.Arcade.Sprite)) return;
+		//	if (!(obstacle instanceof Phaser.Tilemaps.Tile)) return;
+			//avoidObstacles(this.tileSize, player, obstacle);
+		//});
 
 		this.input.keyboard.on('keydown-D', () => {
 			// Turn on physics debugging to show player's hitbox
@@ -139,7 +139,7 @@ export class SteeringDemoScene extends Phaser.Scene implements Scene {
 	}
 }
 
-function avoidObstacles(
+/*function avoidObstacles(
 	tileSize: number,
 	playerChar: Phaser.Physics.Arcade.Sprite,
 	obstacleBody: Phaser.Tilemaps.Tile
@@ -171,3 +171,4 @@ function avoidObstacles(
 		playerChar.body.velocity.add(avoidenceForceNorm);
 	}
 }
+*/
